@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 # frozen_string_literal: true
 
 #
@@ -8,8 +7,6 @@
 # LICENSE file in the root directory of this source tree.
 #
 
-require 'bundler/setup'
-require 'db_fuel'
-require './spec/db_helper'
+require_relative 'library/dbee'
 
-setup_database
+Burner::Jobs.register('db_fuel/dbee', DbFuel::Library::Dbee)
