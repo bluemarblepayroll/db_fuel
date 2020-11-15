@@ -10,7 +10,7 @@
 require 'spec_helper'
 require 'mocks/burner_output'
 
-describe DbFuel::Library::Dbee::Query do
+describe DbFuel::Library::Dbee::Range do
   before(:each) do
     load_data
   end
@@ -33,11 +33,27 @@ describe DbFuel::Library::Dbee::Query do
           { key_path: :first }
         ]
       },
-      register: register
+      register: register,
+      key: :fname,
+      key_path: :first
     }
   end
 
-  let(:payload) { Burner::Payload.new }
+  let(:patients) do
+    [
+      { 'fname' => 'Bozo' },
+      { fname: 'Bugs' },
+      { fname: 'DoesntExist' }
+    ]
+  end
+
+  let(:payload) do
+    Burner::Payload.new(
+      registers: {
+        register => patients
+      }
+    )
+  end
 
   subject { described_class.make(config) }
 
@@ -46,20 +62,13 @@ describe DbFuel::Library::Dbee::Query do
       subject.perform(output, payload)
     end
 
-    specify 'output contains number of records' do
-      string_summary = output.outs.first
-
-      expect(string_summary.read).to include("Loading 3 record(s) into #{register}")
-    end
-
     specify 'payload register has data' do
       records = payload[register]
 
-      expect(records.length).to eq(3)
+      expect(records.length).to eq(2)
 
       expect(records[0]).to include('first' => 'Bozo')
       expect(records[1]).to include('first' => 'Bugs')
-      expect(records[2]).to include('first' => 'Frank')
     end
   end
 end

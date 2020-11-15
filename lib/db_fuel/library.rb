@@ -8,5 +8,7 @@
 #
 
 require_relative 'library/dbee/query'
+require_relative 'library/dbee/range'
 
 Burner::Jobs.register('db_fuel/dbee/query', DbFuel::Library::Dbee::Query)
+Burner::Jobs.register('db_fuel/dbee/range', DbFuel::Library::Dbee::Range)

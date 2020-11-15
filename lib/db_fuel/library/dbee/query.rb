@@ -7,35 +7,21 @@
 # LICENSE file in the root directory of this source tree.
 #
 
+require_relative 'base'
+
 module DbFuel
   module Library
     module Dbee
       # Execute a Dbee Query against a Dbee Model and store the resulting records in the designated
       # payload register.
-      class Query < Burner::JobWithRegister
-        attr_reader :model, :provider, :query
-
-        def initialize(
-          name:,
-          model: {},
-          query: {},
-          register: Burner::DEFAULT_REGISTER
-        )
-          super(name: name, register: register)
-
-          @model    = ::Dbee::Model.make(model)
-          @provider = ::Dbee::Providers::ActiveRecordProvider.new
-          @query    = ::Dbee::Query.make(query)
-
-          freeze
-        end
-
+      #
+      # Expected Payload[register] input: nothing
+      # Payload[register] output: array of objects.
+      class Query < Base
         def perform(output, payload)
-          records = ::ActiveRecord::Base.connection.exec_query(sql).to_a
+          records = execute(sql)
 
-          output.detail("Loading #{records.length} record(s) into #{register}")
-
-          payload[register] = records
+          load_register(records, output, payload)
         end
 
         private
