@@ -10,7 +10,7 @@
 require 'spec_helper'
 require 'mocks/burner_output'
 
-describe DbFuel::Library::Dbee do
+describe DbFuel::Library::Dbee::Query do
   before(:each) do
     load_data
   end

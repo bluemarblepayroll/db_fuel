@@ -7,6 +7,6 @@
 # LICENSE file in the root directory of this source tree.
 #
 
-require_relative 'library/dbee'
+require_relative 'library/dbee/query'
 
-Burner::Jobs.register('db_fuel/dbee', DbFuel::Library::Dbee)
+Burner::Jobs.register('db_fuel/dbee/query', DbFuel::Library::Dbee::Query)

@@ -12,7 +12,12 @@
 
 require 'file_helper'
 
+class Status < ActiveRecord::Base
+  has_many :patients
+end
+
 class Patient < ActiveRecord::Base
+  belongs_to :status
 end
 
 def connect_to_db(name)
@@ -22,11 +27,18 @@ end
 
 def load_schema
   ActiveRecord::Schema.define do
+    create_table :statuses do |t|
+      t.string  :code,     null: false, limit: 25
+      t.integer :priority, null: false, default: 0
+      t.timestamps
+    end
+
     create_table :patients do |t|
-      t.string :chart_number
-      t.string :first
-      t.string :middle
-      t.string :last
+      t.string     :chart_number
+      t.string     :first
+      t.string     :middle
+      t.string     :last
+      t.references :status
       t.timestamps
     end
   end
@@ -34,23 +46,30 @@ end
 
 def clear_data
   Patient.delete_all
+  Status.delete_all
 end
 
 def load_data
+  active_status   = Status.create!(code: 'Active', priority: 1)
+  inactive_status = Status.create!(code: 'Inactive', priority: 2)
+
   Patient.create!(
     first: 'Bozo',
     middle: 'The',
-    last: 'Clown'
+    last: 'Clown',
+    status: active_status
   )
 
   Patient.create!(
     first: 'Frank',
-    last: 'Rizzo'
+    last: 'Rizzo',
+    status: active_status
   )
 
   Patient.create!(
     first: 'Bugs',
     middle: 'The',
-    last: 'Bunny'
+    last: 'Bunny',
+    status: inactive_status
   )
 end
