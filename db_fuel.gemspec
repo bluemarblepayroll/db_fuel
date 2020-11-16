@@ -5,10 +5,10 @@ require './lib/db_fuel/version'
 Gem::Specification.new do |s|
   s.name        = 'db_fuel'
   s.version     = DbFuel::VERSION
-  s.summary     = 'TBD'
+  s.summary     = 'Dbee and ActiveRecord jobs for Burner'
 
   s.description = <<-DESCRIPTION
-    TBD
+    This library adds database-centric jobs to the Burner library.  Burner does not ship database jobs out of the box.
   DESCRIPTION
 
   s.authors     = ['Matthew Ruggio']

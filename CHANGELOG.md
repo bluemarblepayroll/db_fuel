@@ -1,6 +1,9 @@
 # 1.0.0 (TBD)
 
-Initial implementation.
+Initial implementation.  Includes jobs:
+
+* db_fuel/dbee/query
+* db_fuel/dbee/range
 
 # 0.0.1
 
