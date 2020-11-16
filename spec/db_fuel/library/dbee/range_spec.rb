@@ -120,18 +120,9 @@ describe DbFuel::Library::Dbee::Range do
 
       actual = payload['patients']
 
-      expected = [
-        {
-          'id' => 7,
-          'first' => 'Bozo'
-        },
-        {
-          'id' => 9,
-          'first' => 'Bugs'
-        }
-      ]
-
-      expect(actual).to eq(expected)
+      expect(actual.length).to eq(2)
+      expect(actual[0]).to     include('first' => 'Bozo')
+      expect(actual[1]).to     include('first' => 'Bugs')
     end
   end
 end
