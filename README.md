@@ -25,6 +25,104 @@ Refer to the [Burner](https://github.com/bluemarblepayroll/burner) library for m
 * **db_fuel/dbee/query** [model, query, register]:  Pass in a [Dbee](https://github.com/bluemarblepayroll/dbee) model and query and store the results in the specified register.  Refer to the [Dbee](https://github.com/bluemarblepayroll/dbee) library directly on how to craft a model or query.
 * **db_fuel/dbee/range** [key, key_path, model, query, register, separator]: Similar to `db_fuel/dbee/query` with the addition of being able to grab a list of values from the register to use as a Dbee EQUALS/IN filter.  This helps to dynamically limit the resulting record set.  The key is used to specify where to grab the list of values, while the key_path will be used to craft the [Dbee equal's filter](https://github.com/bluemarblepayroll/dbee/blob/master/lib/dbee/query/filters/equals.rb).  Separator is exposed in case nested object support is necessary.
 
+## Examples
+
+### Querying the Database
+
+The `db_fuel/dbee/query` job can be utilized to process a SQL query and store the results in a Burner::Payload register.
+
+Let's say for example we have a list of patients we would like to retrieve:
+
+````ruby
+pipeline = {
+  jobs: [
+    {
+      name: 'load_patients',
+      type: 'db_fuel/dbee/query',
+      model: {
+        name: :patients
+      },
+      query: {
+        fields: [
+          { key_path: :id },
+          { key_path: :first }
+        ],
+        sorters: [
+          { key_path: :first }
+        ]
+      },
+      register: :patients
+    }
+  ],
+  steps: %w[load_patients]
+}
+
+payload = Burner::Payload.new
+
+Burner::Pipeline.make(pipeline).execute(payload: payload)
+````
+
+If we were to inspect the contents of `payload` we should see the patient's result set loaded:
+
+````ruby
+payload['patients'] # array in form of: [ { "id" => 1, "first" => "Something" }, ... ]
+````
+
+### Limiting Result Sets
+
+The `db_fuel/dbee/query` does not provide a way to dynamically connect the query to existing data.  You are free to put any Dbee query filters in the query declaration, but what if you would like to further limit this based on the knowledge of a range of values?  The `db_fuel/dbee/range` job is meant to do exactly this.  On the surface it is mainly an extension of the `db_fuel/dbee/query` job.
+
+Let's say we would like to query patients but we want to limit it to an inputted list of first names:
+
+````ruby
+pipeline = {
+  jobs: [
+    {
+      name: :load_firstnames,
+      type: 'b/value/static',
+      register: :patients,
+      value: [
+        { fname: 'Bozo' },
+        { fname: 'Bugs' },
+      ]
+    },
+    {
+      name: 'load_patients',
+      type: 'db_fuel/dbee/range',
+      model: {
+        name: :patients
+      },
+      query: {
+        fields: [
+          { key_path: :id },
+          { key_path: :first }
+        ],
+        sorters: [
+          { key_path: :first }
+        ]
+      },
+      register: :patients,
+      key: :fname,
+      key_path: :first
+    }
+  ],
+  steps: %w[load_firstnames load_patients]
+}
+
+payload = Burner::Payload.new
+
+Burner::Pipeline.make(pipeline).execute(payload: payload)
+````
+
+If we were to inspect the contents of `payload` we should see the patient's result set loaded:
+
+````ruby
+payload['patients'] # array in form of: [ { "id" => 1, "first" => "Something" }, ... ]
+````
+
+The only difference between the query and range jobs should be the latter is limited based on the incoming first names.
+
+
 ## Contributing
 
 ### Development Environment Configuration

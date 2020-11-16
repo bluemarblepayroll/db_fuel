@@ -62,4 +62,54 @@ describe DbFuel::Library::Dbee::Query do
       expect(records[2]).to include('first' => 'Frank')
     end
   end
+
+  describe 'README examples' do
+    specify 'basic patient query' do
+      pipeline = {
+        jobs: [
+          {
+            name: 'load_patients',
+            type: 'db_fuel/dbee/query',
+            model: {
+              name: :patients
+            },
+            query: {
+              fields: [
+                { key_path: :id },
+                { key_path: :first }
+              ],
+              sorters: [
+                { key_path: :first }
+              ]
+            },
+            register: :patients
+          }
+        ],
+        steps: %w[load_patients]
+      }
+
+      payload = Burner::Payload.new
+
+      Burner::Pipeline.make(pipeline).execute(output: make_burner_output, payload: payload)
+
+      actual = payload['patients']
+
+      expected = [
+        {
+          'id' => 7,
+          'first' => 'Bozo'
+        },
+        {
+          'id' => 9,
+          'first' => 'Bugs'
+        },
+        {
+          'id' => 8,
+          'first' => 'Frank'
+        }
+      ]
+
+      expect(actual).to eq(expected)
+    end
+  end
 end

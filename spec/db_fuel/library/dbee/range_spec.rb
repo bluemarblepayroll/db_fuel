@@ -77,4 +77,61 @@ describe DbFuel::Library::Dbee::Range do
       expect(records[1]).to include('first' => 'Bugs')
     end
   end
+
+  describe 'README examples' do
+    specify 'basic patient query' do
+      pipeline = {
+        jobs: [
+          {
+            name: :load_firstnames,
+            type: 'b/value/static',
+            register: :patients,
+            value: [
+              { fname: 'Bozo' },
+              { fname: 'Bugs' },
+            ]
+          },
+          {
+            name: 'load_patients',
+            type: 'db_fuel/dbee/range',
+            model: {
+              name: :patients
+            },
+            query: {
+              fields: [
+                { key_path: :id },
+                { key_path: :first }
+              ],
+              sorters: [
+                { key_path: :first }
+              ]
+            },
+            register: :patients,
+            key: :fname,
+            key_path: :first
+          }
+        ],
+        steps: %w[load_firstnames load_patients]
+      }
+
+      payload = Burner::Payload.new
+
+      Burner::Pipeline.make(pipeline).execute(output: make_burner_output, payload: payload)
+
+      actual = payload['patients']
+
+      expected = [
+        {
+          'id' => 7,
+          'first' => 'Bozo'
+        },
+        {
+          'id' => 9,
+          'first' => 'Bugs'
+        }
+      ]
+
+      expect(actual).to eq(expected)
+    end
+  end
 end

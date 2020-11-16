@@ -58,20 +58,24 @@ module DbFuel
           array(payload[register]).map { |o| resolver.get(o, key) }.compact
         end
 
-        def dynamic_filter(payload)
+        def dynamic_filters(payload)
           values = map_values(payload)
 
-          {
-            type: :equals,
-            key_path: key_path,
-            value: values,
-          }
+          return [] if values.empty?
+
+          [
+            {
+              type: :equals,
+              key_path: key_path,
+              value: values,
+            }
+          ]
         end
 
         def compile_dbee_query(payload)
           ::Dbee::Query.make(
             fields: query.fields,
-            filters: query.filters + [dynamic_filter(payload)],
+            filters: query.filters + dynamic_filters(payload),
             limit: query.limit,
             sorters: query.sorters
           )
