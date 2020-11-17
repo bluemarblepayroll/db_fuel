@@ -37,7 +37,7 @@ Let's say for example we have a list of patients we would like to retrieve:
 pipeline = {
   jobs: [
     {
-      name: 'load_patients',
+      name: 'retrieve_patients',
       type: 'db_fuel/dbee/query',
       model: {
         name: :patients
@@ -54,7 +54,7 @@ pipeline = {
       register: :patients
     }
   ],
-  steps: %w[load_patients]
+  steps: %w[retrieve_patients]
 }
 
 payload = Burner::Payload.new
@@ -87,7 +87,7 @@ pipeline = {
       ]
     },
     {
-      name: 'load_patients',
+      name: 'retrieve_patients',
       type: 'db_fuel/dbee/range',
       model: {
         name: :patients
@@ -106,7 +106,7 @@ pipeline = {
       key_path: :first_name
     }
   ],
-  steps: %w[load_first_names load_patients]
+  steps: %w[load_first_names retrieve_patients]
 }
 
 payload = Burner::Payload.new

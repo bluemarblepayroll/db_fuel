@@ -68,7 +68,7 @@ describe DbFuel::Library::Dbee::Query do
       pipeline = {
         jobs: [
           {
-            name: 'load_patients',
+            name: 'retrieve_patients',
             type: 'db_fuel/dbee/query',
             model: {
               name: :patients
@@ -85,7 +85,7 @@ describe DbFuel::Library::Dbee::Query do
             register: :patients
           }
         ],
-        steps: %w[load_patients]
+        steps: %w[retrieve_patients]
       }
 
       payload = Burner::Payload.new
