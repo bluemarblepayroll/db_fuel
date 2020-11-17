@@ -23,6 +23,15 @@ module DbFuel
                     :key_path,
                     :resolver
 
+        # Arguments:
+        # - key:       Specifies which key to use to aggregate a list of values for within
+        #              the specified register's dataset.
+        # - key_path:  Specifies the Dbee identifier (column) to use for the IN filter.
+        # - model:     Dbee Model configuration
+        # - query:     Dbee Query configuration
+        # - register:  Name of the register to use for gathering the IN clause values and where
+        #              to store the resulting recordset.
+        # - separator: Character to use to split the key-path for nested object support.
         def initialize(
           name:,
           key:,

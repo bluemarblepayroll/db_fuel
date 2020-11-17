@@ -27,10 +27,10 @@ describe DbFuel::Library::Dbee::Query do
       query: {
         fields: [
           { key_path: :id },
-          { key_path: :first }
+          { key_path: :first_name }
         ],
         sorters: [
-          { key_path: :first }
+          { key_path: :first_name }
         ]
       },
       register: register
@@ -57,9 +57,9 @@ describe DbFuel::Library::Dbee::Query do
 
       expect(records.length).to eq(3)
 
-      expect(records[0]).to include('first' => 'Bozo')
-      expect(records[1]).to include('first' => 'Bugs')
-      expect(records[2]).to include('first' => 'Frank')
+      expect(records[0]).to include('first_name' => 'Bozo')
+      expect(records[1]).to include('first_name' => 'Bugs')
+      expect(records[2]).to include('first_name' => 'Frank')
     end
   end
 
@@ -76,10 +76,10 @@ describe DbFuel::Library::Dbee::Query do
             query: {
               fields: [
                 { key_path: :id },
-                { key_path: :first }
+                { key_path: :first_name }
               ],
               sorters: [
-                { key_path: :first }
+                { key_path: :first_name }
               ]
             },
             register: :patients
@@ -97,15 +97,15 @@ describe DbFuel::Library::Dbee::Query do
       expected = [
         {
           'id' => 7,
-          'first' => 'Bozo'
+          'first_name' => 'Bozo'
         },
         {
           'id' => 9,
-          'first' => 'Bugs'
+          'first_name' => 'Bugs'
         },
         {
           'id' => 8,
-          'first' => 'Frank'
+          'first_name' => 'Frank'
         }
       ]
 

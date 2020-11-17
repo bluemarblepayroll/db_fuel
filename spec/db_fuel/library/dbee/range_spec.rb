@@ -27,20 +27,24 @@ describe DbFuel::Library::Dbee::Range do
       query: {
         fields: [
           { key_path: :id },
-          { key_path: :first }
+          { key_path: :first_name }
         ],
         sorters: [
-          { key_path: :first }
+          { key_path: :first_name }
         ]
       },
       register: register,
       key: :fname,
-      key_path: :first
+      key_path: :first_name
     }
   end
 
   let(:patients) do
     [
+      # This entry has string key(s) to illustrate how keys are treated indifferently.
+      # The library Objectable is used under-the-hood, which provides a more resilient
+      # object attribute/method interface.  See the Objectable library for more info:
+      # https://github.com/bluemarblepayroll/objectable
       { 'fname' => 'Bozo' },
       { fname: 'Bugs' },
       { fname: 'DoesntExist' }
@@ -73,8 +77,8 @@ describe DbFuel::Library::Dbee::Range do
 
       expect(records.length).to eq(2)
 
-      expect(records[0]).to include('first' => 'Bozo')
-      expect(records[1]).to include('first' => 'Bugs')
+      expect(records[0]).to include('first_name' => 'Bozo')
+      expect(records[1]).to include('first_name' => 'Bugs')
     end
   end
 
@@ -83,7 +87,7 @@ describe DbFuel::Library::Dbee::Range do
       pipeline = {
         jobs: [
           {
-            name: :load_firstnames,
+            name: :load_first_names,
             type: 'b/value/static',
             register: :patients,
             value: [
@@ -92,7 +96,7 @@ describe DbFuel::Library::Dbee::Range do
             ]
           },
           {
-            name: 'load_patients',
+            name: 'retrieve_patients',
             type: 'db_fuel/dbee/range',
             model: {
               name: :patients
@@ -100,18 +104,18 @@ describe DbFuel::Library::Dbee::Range do
             query: {
               fields: [
                 { key_path: :id },
-                { key_path: :first }
+                { key_path: :first_name }
               ],
               sorters: [
-                { key_path: :first }
+                { key_path: :first_name }
               ]
             },
             register: :patients,
             key: :fname,
-            key_path: :first
+            key_path: :first_name
           }
         ],
-        steps: %w[load_firstnames load_patients]
+        steps: %w[load_first_names retrieve_patients]
       }
 
       payload = Burner::Payload.new
@@ -121,8 +125,8 @@ describe DbFuel::Library::Dbee::Range do
       actual = payload['patients']
 
       expect(actual.length).to eq(2)
-      expect(actual[0]).to     include('first' => 'Bozo')
-      expect(actual[1]).to     include('first' => 'Bugs')
+      expect(actual[0]).to     include('first_name' => 'Bozo')
+      expect(actual[1]).to     include('first_name' => 'Bugs')
     end
   end
 end

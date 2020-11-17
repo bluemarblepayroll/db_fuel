@@ -45,10 +45,10 @@ pipeline = {
       query: {
         fields: [
           { key_path: :id },
-          { key_path: :first }
+          { key_path: :first_name }
         ],
         sorters: [
-          { key_path: :first }
+          { key_path: :first_name }
         ]
       },
       register: :patients
@@ -65,7 +65,7 @@ Burner::Pipeline.make(pipeline).execute(payload: payload)
 If we were to inspect the contents of `payload` we should see the patient's result set loaded:
 
 ````ruby
-payload['patients'] # array in form of: [ { "id" => 1, "first" => "Something" }, ... ]
+payload['patients'] # array in form of: [ { "id" => 1, "first_name" => "Something" }, ... ]
 ````
 
 ### Limiting Result Sets
@@ -78,7 +78,7 @@ Let's say we would like to query patients but we want to limit it to an inputted
 pipeline = {
   jobs: [
     {
-      name: :load_firstnames,
+      name: :load_first_names,
       type: 'b/value/static',
       register: :patients,
       value: [
@@ -95,18 +95,18 @@ pipeline = {
       query: {
         fields: [
           { key_path: :id },
-          { key_path: :first }
+          { key_path: :first_name }
         ],
         sorters: [
-          { key_path: :first }
+          { key_path: :first_name }
         ]
       },
       register: :patients,
       key: :fname,
-      key_path: :first
+      key_path: :first_name
     }
   ],
-  steps: %w[load_firstnames load_patients]
+  steps: %w[load_first_names load_patients]
 }
 
 payload = Burner::Payload.new
@@ -117,7 +117,7 @@ Burner::Pipeline.make(pipeline).execute(payload: payload)
 If we were to inspect the contents of `payload` we should see the patient's result set loaded:
 
 ````ruby
-payload['patients'] # array in form of: [ { "id" => 1, "first" => "Something" }, ... ]
+payload['patients'] # array in form of: [ { "id" => 1, "first_name" => "Something" }, ... ]
 ````
 
 The only difference between the query and range jobs should be the latter is limited based on the incoming first names.

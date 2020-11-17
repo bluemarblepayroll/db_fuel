@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.summary     = 'Dbee and ActiveRecord jobs for Burner'
 
   s.description = <<-DESCRIPTION
-    This library adds database-centric jobs to the Burner library.  Burner does not ship database jobs out of the box.
+    This library adds database-centric jobs to the Burner library.  Burner does not ship with database jobs out of the box.
   DESCRIPTION
 
   s.authors     = ['Matthew Ruggio']

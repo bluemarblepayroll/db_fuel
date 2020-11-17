@@ -12,8 +12,8 @@ require_relative 'base'
 module DbFuel
   module Library
     module Dbee
-      # Execute a Dbee Query against a Dbee Model and store the resulting records in the designated
-      # payload register.
+      # Executes a Dbee Query against a Dbee Model and stores the resulting records
+      # in the designated payload register.
       #
       # Expected Payload[register] input: nothing
       # Payload[register] output: array of objects.

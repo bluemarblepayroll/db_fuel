@@ -16,6 +16,11 @@ module DbFuel
                     :provider,
                     :query
 
+        # Arguments:
+        # - model:    Dbee Model configuration
+        # - query:    Dbee Query configuration
+        # - register: Name of the register to use for gathering the IN clause values and where
+        #             to store the resulting recordset.
         def initialize(
           name:,
           model: {},

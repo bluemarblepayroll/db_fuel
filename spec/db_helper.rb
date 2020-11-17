@@ -35,9 +35,9 @@ def load_schema
 
     create_table :patients do |t|
       t.string     :chart_number
-      t.string     :first
-      t.string     :middle
-      t.string     :last
+      t.string     :first_name
+      t.string     :middle_name
+      t.string     :last_name
       t.references :status
       t.timestamps
     end
@@ -54,22 +54,22 @@ def load_data
   inactive_status = Status.create!(code: 'Inactive', priority: 2)
 
   Patient.create!(
-    first: 'Bozo',
-    middle: 'The',
-    last: 'Clown',
+    first_name: 'Bozo',
+    middle_name: 'The',
+    last_name: 'Clown',
     status: active_status
   )
 
   Patient.create!(
-    first: 'Frank',
-    last: 'Rizzo',
+    first_name: 'Frank',
+    last_name: 'Rizzo',
     status: active_status
   )
 
   Patient.create!(
-    first: 'Bugs',
-    middle: 'The',
-    last: 'Bunny',
+    first_name: 'Bugs',
+    middle_name: 'The',
+    last_name: 'Bunny',
     status: inactive_status
   )
 end
