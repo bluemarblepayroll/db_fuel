@@ -1,4 +1,4 @@
-# 1.0.0 (TBD)
+# 1.0.0 (November 18th, 2020)
 
 Initial implementation.  Includes jobs:
 
