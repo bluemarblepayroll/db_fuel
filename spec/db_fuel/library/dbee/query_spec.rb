@@ -83,8 +83,7 @@ describe DbFuel::Library::Dbee::Query do
             },
             register: :patients
           }
-        ],
-        steps: %w[retrieve_patients]
+        ]
       }
 
       payload = Burner::Payload.new

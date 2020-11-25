@@ -36,17 +36,17 @@ describe DbFuel::Library::ActiveRecord::Update do
 
   let(:patients) do
     [
-      { chart_number: 'C0001', first_name: 'BOZZY', last_name: 'CLOWNZY' },
-      { chart_number: 'R0001', first_name: 'FRANKY', last_name: 'RIZZY' }
+      { 'chart_number' => 'C0001', 'first_name' => 'BOZZY', 'last_name' => 'CLOWNZY' },
+      { 'chart_number' => 'R0001', 'first_name' => 'FRANKY', 'last_name' => 'RIZZY' }
     ]
   end
 
-  let(:chart_numbers) { patients.map { |p| p[:chart_number] } }
+  let(:chart_numbers) { patients.map { |p| p['chart_number'] } }
 
   let(:payload) do
     Burner::Payload.new(
       registers: {
-        register => patients
+        register => patients.map { |p| {}.merge(p) } # shallow copy to preserve original
       }
     )
   end
@@ -61,25 +61,33 @@ describe DbFuel::Library::ActiveRecord::Update do
     end
 
     it 'updates scoped records with specified attributes' do
-      db_patients = Patient.order(:chart_number).where(chart_number: chart_numbers)
+      db_patients = Patient
+                    .order(:chart_number)
+                    .where(chart_number: chart_numbers)
+                    .select(:chart_number, :first_name, :last_name)
+                    .as_json(except: :id)
 
       expect(db_patients.count).to eq(2)
-
-      db_patients.each_with_index do |db_patient, index|
-        expect(db_patient.chart_number).to eq(patients.dig(index, :chart_number))
-        expect(db_patient.first_name).to   eq(patients.dig(index, :first_name))
-        expect(db_patient.last_name).to    eq(patients.dig(index, :last_name))
-      end
+      expect(db_patients).to       eq(patients)
     end
 
     it 'does not update outside scoped records' do
-      db_patients = Patient.order(:chart_number).where.not(chart_number: chart_numbers)
+      db_patients = Patient
+                    .order(:chart_number)
+                    .where.not(chart_number: chart_numbers)
+                    .select(:chart_number, :first_name, :last_name)
+                    .as_json(except: :id)
+
+      expected = [
+        {
+          'chart_number' => 'B0001',
+          'first_name' => 'Bugs',
+          'last_name' => 'Bunny'
+        }
+      ]
 
       expect(db_patients.count).to eq(1)
-
-      expect(db_patients.first.chart_number).to eq('B0001')
-      expect(db_patients.first.first_name).to   eq('Bugs')
-      expect(db_patients.first.last_name).to    eq('Bunny')
+      expect(db_patients).to       eq(expected)
     end
 
     it 'outputs total affect row count' do
@@ -106,6 +114,53 @@ describe DbFuel::Library::ActiveRecord::Update do
       it 'does not output return objects' do
         expect(written).not_to include('Individual Rows Affected:')
       end
+    end
+  end
+
+  describe 'README examples' do
+    specify 'patient update' do
+      pipeline = {
+        jobs: [
+          {
+            name: :load_patients,
+            type: 'b/value/static',
+            register: :patients,
+            value: [
+              { chart_number: 'B0001', last_name: 'Fox' },
+              { chart_number: 'C0001', last_name: 'Smurf' }
+            ]
+          },
+          {
+            name: 'update_patients',
+            type: 'db_fuel/active_record/update',
+            register: :patients,
+            attributes: [
+              { key: :last_name }
+            ],
+            table_name: 'patients',
+            unique_keys: [
+              { key: :chart_number }
+            ]
+          }
+        ]
+      }
+
+      payload = Burner::Payload.new
+
+      Burner::Pipeline.make(pipeline).execute(output: output, payload: payload)
+
+      actual = Patient
+               .order(:chart_number)
+               .select(:chart_number, :first_name, :last_name)
+               .as_json(except: :id)
+
+      expected = [
+        { 'chart_number' => 'B0001', 'first_name' => 'Bugs', 'last_name' => 'Fox' },
+        { 'chart_number' => 'C0001', 'first_name' => 'Bozo', 'last_name' => 'Smurf' },
+        { 'chart_number' => 'R0001', 'first_name' => 'Frank', 'last_name' => 'Rizzo' }
+      ]
+
+      expect(actual).to eq(expected)
     end
   end
 end

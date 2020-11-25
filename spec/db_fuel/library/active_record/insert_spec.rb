@@ -33,15 +33,15 @@ describe DbFuel::Library::ActiveRecord::Insert do
 
   let(:patients) do
     [
-      { chart_number: 'AB0', first_name: 'a0', last_name: 'b0' },
-      { chart_number: 'AB1', first_name: 'a1', last_name: 'b1' }
+      { 'chart_number' => 'AB0', 'first_name' => 'a0', 'last_name' => 'b0' },
+      { 'chart_number' => 'AB1', 'first_name' => 'a1', 'last_name' => 'b1' }
     ]
   end
 
   let(:payload) do
     Burner::Payload.new(
       registers: {
-        register => patients
+        register => patients.map { |p| {}.merge(p) } # shallow copy to preserve original
       }
     )
   end
@@ -78,15 +78,13 @@ describe DbFuel::Library::ActiveRecord::Insert do
     end
 
     it 'inserts records with specified attributes' do
-      db_patients = Patient.order(:chart_number)
+      db_patients = Patient
+                    .order(:chart_number)
+                    .select(:chart_number, :first_name, :last_name)
+                    .as_json(except: :id)
 
       expect(db_patients.count).to eq(2)
-
-      db_patients.each_with_index do |db_patient, index|
-        expect(db_patient.chart_number).to eq(patients.dig(index, :chart_number))
-        expect(db_patient.first_name).to   eq(patients.dig(index, :first_name))
-        expect(db_patient.last_name).to    eq(patients.dig(index, :last_name))
-      end
+      expect(db_patients).to       eq(patients)
     end
 
     it 'sets timestamp columns' do
@@ -98,6 +96,54 @@ describe DbFuel::Library::ActiveRecord::Insert do
         expect(db_patient.created_at).not_to be nil
         expect(db_patient.updated_at).not_to be nil
       end
+    end
+  end
+
+  describe 'README examples' do
+    specify 'patient insert' do
+      pipeline = {
+        jobs: [
+          {
+            name: :load_patients,
+            type: 'b/value/static',
+            register: :patients,
+            value: [
+              { chart_number: 'B0001', first_name: 'Bugs', last_name: 'Bunny' },
+              { chart_number: 'B0002', first_name: 'Babs', last_name: 'Bunny' }
+            ]
+          },
+          {
+            name: 'insert_patients',
+            type: 'db_fuel/active_record/insert',
+            register: :patients,
+            attributes: [
+              { key: :chart_number },
+              { key: :first_name },
+              { key: :last_name }
+            ],
+            table_name: 'patients',
+            primary_key: {
+              key: :id
+            }
+          }
+        ]
+      }
+
+      payload = Burner::Payload.new
+
+      Burner::Pipeline.make(pipeline).execute(output: output, payload: payload)
+
+      actual = Patient
+               .order(:chart_number)
+               .select(:chart_number, :first_name, :last_name)
+               .as_json(except: :id)
+
+      expected = [
+        { 'chart_number' => 'B0001', 'first_name' => 'Bugs', 'last_name' => 'Bunny' },
+        { 'chart_number' => 'B0002', 'first_name' => 'Babs', 'last_name' => 'Bunny' }
+      ]
+
+      expect(actual).to eq(expected)
     end
   end
 end

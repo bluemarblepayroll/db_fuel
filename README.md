@@ -34,6 +34,27 @@ Refer to the [Burner](https://github.com/bluemarblepayroll/burner) library for m
 
 ## Examples
 
+In all the examples we will assume we have the following schema:
+
+````ruby
+ActiveRecord::Schema.define do
+  create_table :statuses do |t|
+    t.string  :code,     null: false, limit: 25
+    t.integer :priority, null: false, default: 0
+    t.timestamps
+  end
+
+  create_table :patients do |t|
+    t.string     :chart_number
+    t.string     :first_name
+    t.string     :middle_name
+    t.string     :last_name
+    t.references :status
+    t.timestamps
+  end
+end
+````
+
 ### Querying the Database
 
 The `db_fuel/dbee/query` job can be utilized to process a SQL query and store the results in a Burner::Payload register.
@@ -60,8 +81,7 @@ pipeline = {
       },
       register: :patients
     }
-  ],
-  steps: %w[retrieve_patients]
+  ]
 }
 
 payload = Burner::Payload.new
@@ -112,8 +132,7 @@ pipeline = {
       key: :fname,
       key_path: :first_name
     }
-  ],
-  steps: %w[load_first_names retrieve_patients]
+  ]
 }
 
 payload = Burner::Payload.new
@@ -129,7 +148,95 @@ payload['patients'] # array in form of: [ { "id" => 1, "first_name" => "Somethin
 
 The only difference between the query and range jobs should be the latter is limited based on the incoming first names.
 
+### Updating the Database
 
+#### Inserting Records
+
+We can deal with persistence using the db_fuel/active_record/* jobs.  In order to insert new records we can use the `db_fuel/active_record/insert` job.  For example:
+
+````ruby
+pipeline = {
+  jobs: [
+    {
+      name: :load_patients,
+      type: 'b/value/static',
+      register: :patients,
+      value: [
+        { chart_number: 'B0001', first_name: 'Bugs', last_name: 'Bunny' },
+        { chart_number: 'B0002', first_name: 'Babs', last_name: 'Bunny' }
+      ]
+    },
+    {
+      name: 'insert_patients',
+      type: 'db_fuel/active_record/insert',
+      register: :patients,
+      attributes: [
+        { key: :chart_number },
+        { key: :first_name },
+        { key: :last_name }
+      ],
+      table_name: 'patients',
+      primary_key: {
+        key: :id
+      }
+    }
+  ]
+}
+
+payload = Burner::Payload.new
+
+Burner::Pipeline.make(pipeline).execute(payload: payload)
+````
+
+There should now be two new patients, AB0 and AB1, present in the table `patients`.
+
+Notes:
+
+* Since we specified the `primary_key`, the records' `id` attributes should be set to their respective primary key values.
+* Set `debug: true` to print out each INSERT statement in the output (not for production use.)
+
+#### Updating Records
+
+Let's say we now want to update those records' last names:
+
+````ruby
+pipeline = {
+  jobs: [
+    {
+      name: :load_patients,
+      type: 'b/value/static',
+      register: :patients,
+      value: [
+        { chart_number: 'B0001', last_name: 'Fox' },
+        { chart_number: 'B0002', last_name: 'Smurf' }
+      ]
+    },
+    {
+      name: 'update_patients',
+      type: 'db_fuel/active_record/update',
+      register: :patients,
+      attributes: [
+        { key: :last_name }
+      ],
+      table_name: 'patients',
+      unique_keys: [
+        { key: :chart_number }
+      ]
+    }
+  ]
+}
+
+payload = Burner::Payload.new
+
+Burner::Pipeline.make(pipeline).execute(payload: payload)
+````
+
+Each database record should have been updated with their new respective last names.
+
+Notes:
+
+* The unique_keys translate to WHERE clauses.
+* Set `debug: true` to print out each UPDATE statement in the output (not for production use.)
 ## Contributing
 
 ### Development Environment Configuration
