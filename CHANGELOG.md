@@ -1,3 +1,9 @@
+# 1.1.0 (TBD)
+
+New Jobs:
+
+* db_fuel/active_record/insert
+
 # 1.0.0 (November 18th, 2020)
 
 Initial implementation.  Includes jobs:

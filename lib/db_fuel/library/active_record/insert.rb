@@ -15,6 +15,10 @@ module DbFuel
       # Expected Payload[register] input: array of objects
       # Payload[register] output: array of objects.
       class Insert < Burner::JobWithRegister
+        CREATED_AT = :created_at
+        NOW_TYPE   = 'r/value/now'
+        UPDATED_AT = :updated_at
+
         attr_reader :arel_table,
                     :attribute_renderers,
                     :debug,
@@ -78,31 +82,37 @@ module DbFuel
             insert_manager = ::Arel::InsertManager.new
             insert_manager.insert(arel_row)
 
-            output.detail("Insert Statement: #{insert_manager.to_sql}")
+            debug_detail(output, "Insert Statement: #{insert_manager.to_sql}")
 
             id = ::ActiveRecord::Base.connection.insert(insert_manager)
 
             resolver.set(row, primary_key.key, id) if primary_key
 
-            output.detail("Insert Return: #{row}")
+            debug_detail(output, "Insert Return: #{row}")
           end
         end
 
         private
 
+        def debug_detail(output, message)
+          return unless debug
+
+          output.detail(message)
+        end
+
         def timestamp_renderers
           Burner::Modeling::Attribute.array(
             [
               {
-                key: :created_at,
+                key: CREATED_AT,
                 transformers: [
-                  { type: 'r/value/now' }
+                  { type: NOW_TYPE }
                 ]
               },
               {
-                key: :updated_at,
+                key: UPDATED_AT,
                 transformers: [
-                  { type: 'r/value/now' }
+                  { type: NOW_TYPE }
                 ]
               }
             ]

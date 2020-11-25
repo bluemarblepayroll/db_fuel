@@ -91,6 +91,18 @@ describe DbFuel::Library::ActiveRecord::Insert do
       end
     end
 
+    context 'when debug is false' do
+      let(:written) { output.outs.first.string }
+
+      it 'output does not contain sql statements' do
+        expect(written).not_to include('Insert Statement: INSERT INTO "patients"')
+      end
+
+      it 'output doesn not contain return object' do
+        expect(written).not_to include('Insert Return: {')
+      end
+    end
+
     it 'inserts records with specified attributes' do
       db_patients = Patient.order(:chart_number)
 

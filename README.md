@@ -22,6 +22,12 @@ bundle add db_fuel
 
 Refer to the [Burner](https://github.com/bluemarblepayroll/burner) library for more specific information on how Burner works.  This section will just focus on what this library directly adds.
 
+### ActiveRecord Jobs
+
+* **db_fuel/active_record/insert** [table_name, attributes, debug, primary_key, register, separator, timestamps]: This job can take the objects in a register and insert them into a database table.  Attributes defines which object properties to convert to SQL.  Refer to the class and constructor specification for more detail.
+
+### Dbee Jobs
+
 * **db_fuel/dbee/query** [model, query, register]:  Pass in a [Dbee](https://github.com/bluemarblepayroll/dbee) model and query and store the results in the specified register.  Refer to the [Dbee](https://github.com/bluemarblepayroll/dbee) library directly on how to craft a model or query.
 * **db_fuel/dbee/range** [key, key_path, model, query, register, separator]: Similar to `db_fuel/dbee/query` with the addition of being able to grab a list of values from the register to use as a Dbee EQUALS/IN filter.  This helps to dynamically limit the resulting record set.  The key is used to specify where to grab the list of values, while the key_path will be used to craft the [Dbee equal's filter](https://github.com/bluemarblepayroll/dbee/blob/master/lib/dbee/query/filters/equals.rb).  Separator is exposed in case nested object support is necessary.
 
