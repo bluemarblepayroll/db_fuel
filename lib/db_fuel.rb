@@ -14,4 +14,7 @@ require 'dbee'
 require 'dbee/providers/active_record_provider'
 require 'objectable'
 
+# General purpose classes used by the main job classes.
+require_relative 'db_fuel/modeling'
+
 require_relative 'db_fuel/library'

@@ -95,20 +95,19 @@ describe DbFuel::Library::Dbee::Query do
 
       expected = [
         {
-          'id' => 7,
           'first_name' => 'Bozo'
         },
         {
-          'id' => 9,
           'first_name' => 'Bugs'
         },
         {
-          'id' => 8,
           'first_name' => 'Frank'
         }
       ]
 
-      expect(actual).to eq(expected)
+      expect(actual[0]).to include(expected[0])
+      expect(actual[1]).to include(expected[1])
+      expect(actual[2]).to include(expected[2])
     end
   end
 end
