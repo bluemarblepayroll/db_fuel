@@ -3,6 +3,7 @@
 New Jobs:
 
 * db_fuel/active_record/insert
+* db_fuel/active_record/update
 
 # 1.0.0 (November 18th, 2020)
 

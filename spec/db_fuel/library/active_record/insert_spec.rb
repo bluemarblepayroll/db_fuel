@@ -20,34 +20,9 @@ describe DbFuel::Library::ActiveRecord::Insert do
       register: register,
       debug: debug,
       attributes: [
-        {
-          key: :chart_number,
-          transformers: [
-            {
-              type: 'r/value/resolve',
-              key: :chart_number
-            }
-          ]
-        },
-        {
-          key: :first_name,
-          transformers: [
-            {
-              type: 'r/value/resolve',
-              key: :first_name
-            }
-          ]
-        },
-        {
-          key: :last_name,
-          transformers: [
-            {
-              type: 'r/value/resolve',
-              key: :last_name
-            }
-          ]
-        }
-
+        { key: :chart_number },
+        { key: :first_name },
+        { key: :last_name }
       ],
       table_name: 'patients',
       primary_key: {
@@ -71,6 +46,8 @@ describe DbFuel::Library::ActiveRecord::Insert do
     )
   end
 
+  let(:written) { output.outs.first.string }
+
   subject { described_class.make(config) }
 
   describe '#perform' do
@@ -79,26 +56,23 @@ describe DbFuel::Library::ActiveRecord::Insert do
     end
 
     context 'when debug is true' do
-      let(:debug)   { true }
-      let(:written) { output.outs.first.string }
+      let(:debug) { true }
 
       it 'outputs sql statements' do
         expect(written).to include('Insert Statement: INSERT INTO "patients"')
       end
 
-      it 'outputs return object' do
+      it 'outputs return objects' do
         expect(written).to include('Insert Return: {')
       end
     end
 
     context 'when debug is false' do
-      let(:written) { output.outs.first.string }
-
-      it 'output does not contain sql statements' do
+      it 'does not output does sql statements' do
         expect(written).not_to include('Insert Statement: INSERT INTO "patients"')
       end
 
-      it 'output doesn not contain return object' do
+      it 'does not output return objects' do
         expect(written).not_to include('Insert Return: {')
       end
     end
@@ -112,6 +86,17 @@ describe DbFuel::Library::ActiveRecord::Insert do
         expect(db_patient.chart_number).to eq(patients.dig(index, :chart_number))
         expect(db_patient.first_name).to   eq(patients.dig(index, :first_name))
         expect(db_patient.last_name).to    eq(patients.dig(index, :last_name))
+      end
+    end
+
+    it 'sets timestamp columns' do
+      db_patients = Patient.order(:chart_number)
+
+      expect(db_patients.count).to eq(2)
+
+      db_patients.each_with_index do |db_patient, _index|
+        expect(db_patient.created_at).not_to be nil
+        expect(db_patient.updated_at).not_to be nil
       end
     end
   end

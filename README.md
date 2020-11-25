@@ -25,6 +25,7 @@ Refer to the [Burner](https://github.com/bluemarblepayroll/burner) library for m
 ### ActiveRecord Jobs
 
 * **db_fuel/active_record/insert** [table_name, attributes, debug, primary_key, register, separator, timestamps]: This job can take the objects in a register and insert them into a database table.  Attributes defines which object properties to convert to SQL.  Refer to the class and constructor specification for more detail.
+* **db_fuel/active_record/update** [table_name, attributes, debug, register, separator, timestamps, unique_keys]: This job can take the objects in a register and updates them within a database table.  Attributes defines which object properties to convert to SQL SET clauses while unique_keys translate to WHERE clauses.  Refer to the class and constructor specification for more detail.
 
 ### Dbee Jobs
 
