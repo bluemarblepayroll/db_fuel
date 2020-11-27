@@ -104,7 +104,7 @@ describe DbFuel::Library::ActiveRecord::FindOrInsert do
       let(:debug) { true }
 
       it 'outputs find sql' do
-        expect(written).to include('Find Statement: SELECT * FROM "patients"')
+        expect(written).to include('Find Statement: SELECT')
       end
 
       it 'outputs existing record' do
