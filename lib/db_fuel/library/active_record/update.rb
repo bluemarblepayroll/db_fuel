@@ -19,7 +19,7 @@ module DbFuel
       # Expected Payload[register] input: array of objects
       # Payload[register] output: array of objects.
       class Update < Base
-        attr_reader :unique_keys
+        attr_reader :unique_attribute_renderers
 
         # Arguments:
         #   name [required]: name of the job within the Burner::Pipeline.
@@ -43,8 +43,8 @@ module DbFuel
         #   timestamps: If timestamps is true (default behavior) then the updated_at column will
         #               automatically have its value set to the current UTC timestamp.
         #
-        #   unique_keys: Each key will become a WHERE clause in order to only update specific
-        #                records.
+        #   unique_attributes: Each key will become a WHERE clause in order to only update specific
+        #                      records.
         def initialize(
           name:,
           table_name:,
@@ -53,7 +53,7 @@ module DbFuel
           register: Burner::DEFAULT_REGISTER,
           separator: '',
           timestamps: true,
-          unique_keys: []
+          unique_attributes: []
         )
           explicit_attributes = Burner::Modeling::Attribute.array(attributes)
 
@@ -68,7 +68,7 @@ module DbFuel
             separator: separator
           )
 
-          @unique_keys = Modeling::KeyedColumn.array(unique_keys)
+          @unique_attribute_renderers = make_attribute_renderers(unique_attributes)
 
           freeze
         end
@@ -79,11 +79,14 @@ module DbFuel
           payload[register] = array(payload[register])
 
           payload[register].each do |row|
-            update_manager = make_update_manager(row, payload.time)
+            set_object   = transform(attribute_renderers, row, payload.time)
+            where_object = transform(unique_attribute_renderers, row, payload.time)
 
-            debug_detail(output, "Update Statement: #{update_manager.to_sql}")
+            sql = db_provider.update_sql(set_object, where_object)
 
-            rows_affected = ::ActiveRecord::Base.connection.update(update_manager)
+            debug_detail(output, "Update Statement: #{sql}")
+
+            rows_affected = db_provider.update(set_object, where_object)
 
             debug_detail(output, "Individual Rows Affected: #{rows_affected}")
 
@@ -95,28 +98,10 @@ module DbFuel
 
         private
 
-        def make_update_manager(row, time)
-          arel_row       = make_arel_row(transform(row, time))
-          unique_values  = make_unique_column_values(row)
-          update_manager = ::Arel::UpdateManager.new.set(arel_row).table(arel_table)
-
-          apply_where(unique_values, update_manager)
-        end
-
-        def make_unique_column_values(row)
-          unique_keys.each_with_object({}) do |unique_key, memo|
-            memo[unique_key.column] = resolver.get(row, unique_key.key)
-          end
-        end
-
-        def apply_where(hash, manager)
-          (hash || {}).inject(manager) do |memo, (key, value)|
-            memo.where(arel_table[key].eq(value))
-          end
-        end
-
         def timestamp_attributes
-          [timestamp_attribute(UPDATED_AT)]
+          [
+            updated_at_timestamp_attribute
+          ]
         end
       end
     end

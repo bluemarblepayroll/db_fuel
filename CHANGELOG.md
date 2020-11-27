@@ -2,6 +2,7 @@
 
 New Jobs:
 
+* db_fuel/active_record/find_or_insert
 * db_fuel/active_record/insert
 * db_fuel/active_record/update
 

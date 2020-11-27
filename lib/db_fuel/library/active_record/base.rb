@@ -19,8 +19,8 @@ module DbFuel
         NOW_TYPE   = 'r/value/now'
         UPDATED_AT = :updated_at
 
-        attr_reader :arel_table,
-                    :attribute_renderers,
+        attr_reader :attribute_renderers,
+                    :db_provider,
                     :debug,
                     :resolver
 
@@ -34,18 +34,36 @@ module DbFuel
         )
           super(name: name, register: register)
 
-          @arel_table = ::Arel::Table.new(table_name.to_s)
-          @debug      = debug || false
-
           # set resolver first since make_attribute_renderers needs it.
-          @resolver = Objectable.resolver(separator: separator)
-
-          @attribute_renderers = Burner::Modeling::Attribute
-                                 .array(attributes)
-                                 .map { |a| Burner::Modeling::AttributeRenderer.new(a, resolver) }
+          @resolver            = Objectable.resolver(separator: separator)
+          @attribute_renderers = make_attribute_renderers(attributes)
+          @db_provider         = DbProvider.new(table_name)
+          @debug = debug || false
         end
 
         private
+
+        def make_attribute_renderers(attributes)
+          Burner::Modeling::Attribute
+            .array(attributes)
+            .map { |a| Burner::Modeling::AttributeRenderer.new(a, resolver) }
+        end
+
+        def transform(attribute_renderers, row, time)
+          attribute_renderers.each_with_object({}) do |attribute_renderer, memo|
+            value = attribute_renderer.transform(row, time)
+
+            resolver.set(memo, attribute_renderer.key, value)
+          end
+        end
+
+        def created_at_timestamp_attribute
+          timestamp_attribute(CREATED_AT)
+        end
+
+        def updated_at_timestamp_attribute
+          timestamp_attribute(UPDATED_AT)
+        end
 
         def timestamp_attribute(key)
           Burner::Modeling::Attribute.make(
@@ -60,18 +78,6 @@ module DbFuel
           return unless debug
 
           output.detail(message)
-        end
-
-        def make_arel_row(row)
-          row.map { |key, value| [arel_table[key], value] }
-        end
-
-        def transform(row, time)
-          attribute_renderers.each_with_object({}) do |attribute_renderer, memo|
-            value = attribute_renderer.transform(row, time)
-
-            resolver.set(memo, attribute_renderer.key, value)
-          end
         end
       end
     end

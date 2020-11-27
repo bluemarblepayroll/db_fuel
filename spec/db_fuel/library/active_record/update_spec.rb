@@ -28,7 +28,7 @@ describe DbFuel::Library::ActiveRecord::Update do
         { key: :last_name }
       ],
       table_name: 'patients',
-      unique_keys: [
+      unique_attributes: [
         { key: :chart_number }
       ]
     }
@@ -138,7 +138,7 @@ describe DbFuel::Library::ActiveRecord::Update do
               { key: :last_name }
             ],
             table_name: 'patients',
-            unique_keys: [
+            unique_attributes: [
               { key: :chart_number }
             ]
           }

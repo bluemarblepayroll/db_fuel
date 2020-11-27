@@ -24,8 +24,9 @@ Refer to the [Burner](https://github.com/bluemarblepayroll/burner) library for m
 
 ### ActiveRecord Jobs
 
+* **db_fuel/active_record/find_or_insert** [table_name, attributes, debug, primary_key, register, separator, timestamps, unique_attributes]: An extension of the `db_fuel/active_record/insert` job that adds an existence check before sql insertion. The  `unique_attributes` will be converted to WHERE clauses for performing the existence check.
 * **db_fuel/active_record/insert** [table_name, attributes, debug, primary_key, register, separator, timestamps]: This job can take the objects in a register and insert them into a database table.  Attributes defines which object properties to convert to SQL.  Refer to the class and constructor specification for more detail.
-* **db_fuel/active_record/update** [table_name, attributes, debug, register, separator, timestamps, unique_keys]: This job can take the objects in a register and updates them within a database table.  Attributes defines which object properties to convert to SQL SET clauses while unique_keys translate to WHERE clauses.  Refer to the class and constructor specification for more detail.
+* **db_fuel/active_record/update** [table_name, attributes, debug, register, separator, timestamps, unique_attributes]: This job can take the objects in a register and updates them within a database table.  Attributes defines which object properties to convert to SQL SET clauses while unique_attributes translate to WHERE clauses.  Refer to the class and constructor specification for more detail.
 
 ### Dbee Jobs
 
@@ -195,6 +196,49 @@ Notes:
 * Since we specified the `primary_key`, the records' `id` attributes should be set to their respective primary key values.
 * Set `debug: true` to print out each INSERT statement in the output (not for production use.)
 
+#### Inserting Only New Records
+
+Another job `db_fuel/active_record/find_or_insert` allows for an existence check to performed each insertion.  If a record is found then it will not insert the record.  If `primary_key` is set then the existence check will also still set the primary key on the payload's respective object. We can build on the above insert example for only inserting new patients if their chart_number is unique:
+
+````ruby
+pipeline = {
+  jobs: [
+    {
+      name: :load_patients,
+      type: 'b/value/static',
+      register: :patients,
+      value: [
+        { chart_number: 'B0001', first_name: 'Bugs', last_name: 'Bunny' },
+        { chart_number: 'B0002', first_name: 'Babs', last_name: 'Bunny' }
+      ]
+    },
+    {
+      name: 'insert_patients',
+      type: 'db_fuel/active_record/insert',
+      register: :patients,
+      attributes: [
+        { key: :chart_number },
+        { key: :first_name },
+        { key: :last_name }
+      ],
+      table_name: 'patients',
+      primary_key: {
+        key: :id
+      },
+      unique_attributes: [
+        { key: :chart_number }
+      ]
+    }
+  ]
+}
+
+payload = Burner::Payload.new
+
+Burner::Pipeline.make(pipeline).execute(payload: payload)
+````
+
+Now only records where the chart_number does not match an existing record will be inserted.
+
 #### Updating Records
 
 Let's say we now want to update those records' last names:
@@ -219,7 +263,7 @@ pipeline = {
         { key: :last_name }
       ],
       table_name: 'patients',
-      unique_keys: [
+      unique_attributes: [
         { key: :chart_number }
       ]
     }
@@ -235,7 +279,7 @@ Each database record should have been updated with their new respective last nam
 
 Notes:
 
-* The unique_keys translate to WHERE clauses.
+* The `unique_attributes` translate to WHERE clauses.
 * Set `debug: true` to print out each UPDATE statement in the output (not for production use.)
 ## Contributing
 

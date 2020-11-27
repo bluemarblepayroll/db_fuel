@@ -7,17 +7,20 @@
 # LICENSE file in the root directory of this source tree.
 #
 
-require_relative 'base'
+require_relative 'insert'
 
 module DbFuel
   module Library
     module ActiveRecord
-      # This job can take the objects in a register and insert them into a database table.
+      # This job is a slight enhancement to the insert job, in that it will only insert new
+      # records.  It will use the unique_keys to first run a query to see if it exists.
+      # Each unique_key becomes a WHERE clause.  If primary_key is specified and a record is
+      # found then the first record's id will be set to the primary_key.
       #
       # Expected Payload[register] input: array of objects
       # Payload[register] output: array of objects.
-      class Insert < Base
-        attr_reader :primary_key
+      class FindOrInsert < Insert
+        attr_reader :unique_attribute_renderers
 
         # Arguments:
         #   name [required]: name of the job within the Burner::Pipeline.
@@ -44,6 +47,9 @@ module DbFuel
         #   timestamps: If timestamps is true (default behavior) then both created_at
         #               and updated_at columns will automatically have their values set
         #               to the current UTC timestamp.
+        #
+        #   unique_attributes: Each key will become a WHERE clause in order check for record
+        #                      existence before insertion attempt.
         def initialize(
           name:,
           table_name:,
@@ -52,58 +58,67 @@ module DbFuel
           primary_key: nil,
           register: Burner::DEFAULT_REGISTER,
           separator: '',
-          timestamps: true
+          timestamps: true,
+          unique_attributes: []
         )
-          explicit_attributes = Burner::Modeling::Attribute.array(attributes)
-
-          attributes = timestamps ? timestamp_attributes + explicit_attributes : explicit_attributes
-
           super(
             name: name,
             table_name: table_name,
             attributes: attributes,
             debug: debug,
+            primary_key: primary_key,
             register: register,
-            separator: separator
+            separator: separator,
+            timestamps: timestamps
           )
 
-          @primary_key = Modeling::KeyedColumn.make(primary_key, nullable: true)
+          @unique_attribute_renderers = make_attribute_renderers(unique_attributes)
         end
 
         def perform(output, payload)
+          total_inserted = 0
+          total_existed  = 0
+
           payload[register] = array(payload[register])
 
-          payload[register].each { |row| insert(output, row, payload.time) }
+          payload[register].each do |row|
+            exists = existence_check_and_mutate(output, row, payload.time)
+
+            if exists
+              total_existed += 1
+              next
+            end
+
+            insert(output, row, payload.time)
+
+            total_inserted += 1
+          end
+
+          output.detail("Total Existed: #{total_existed}")
+          output.detail("Total Inserted: #{total_inserted}")
         end
 
         private
 
-        def insert(output, row, time)
-          transformed_row = transform(attribute_renderers, row, time)
+        def existence_check_and_mutate(output, row, time)
+          unique_row = transform(unique_attribute_renderers, row, time)
 
-          output_sql(output, transformed_row)
-          insert_and_mutate(output, transformed_row, row)
-        end
+          first_sql = db_provider.first_sql(unique_row)
+          debug_detail(output, "Find Statement: #{first_sql}")
 
-        def output_sql(output, row)
-          sql = db_provider.insert_sql(row)
+          first_record = db_provider.first(unique_row)
 
-          debug_detail(output, "Insert Statement: #{sql}")
-        end
+          return false unless first_record
 
-        def insert_and_mutate(output, row_to_insert, row_to_return)
-          id = db_provider.insert(row_to_insert)
+          if primary_key
+            id = resolver.get(first_record, primary_key.column)
 
-          resolver.set(row_to_return, primary_key.key, id) if primary_key
+            resolver.set(row, primary_key.key, id)
+          end
 
-          debug_detail(output, "Insert Return: #{row_to_return}")
-        end
+          debug_detail(output, "Record Exists: #{first_record}")
 
-        def timestamp_attributes
-          [
-            created_at_timestamp_attribute,
-            updated_at_timestamp_attribute
-          ]
+          true
         end
       end
     end
