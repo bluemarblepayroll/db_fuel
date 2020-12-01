@@ -24,8 +24,8 @@ Refer to the [Burner](https://github.com/bluemarblepayroll/burner) library for m
 
 ### ActiveRecord Jobs
 
-* **db_fuel/active_record/find_or_insert** [table_name, attributes, debug, primary_key, register, separator, timestamps, unique_attributes]: An extension of the `db_fuel/active_record/insert` job that adds an existence check before sql insertion. The  `unique_attributes` will be converted to WHERE clauses for performing the existence check.
-* **db_fuel/active_record/insert** [table_name, attributes, debug, primary_key, register, separator, timestamps]: This job can take the objects in a register and insert them into a database table.  Attributes defines which object properties to convert to SQL.  Refer to the class and constructor specification for more detail.
+* **db_fuel/active_record/find_or_insert** [table_name, attributes, debug, primary_key, register, separator, timestamps, unique_attributes]: An extension of the `db_fuel/active_record/insert` job that adds an existence check before SQL insertion. The  `unique_attributes` will be converted to WHERE clauses for performing the existence check.
+* **db_fuel/active_record/insert** [table_name, attributes, debug, primary_key, register, separator, timestamps]: This job can take the objects in a register and insert them into a database table.  If primary_key is specified then its key will be set to the primary key.  Note that composite primary keys are not supported.  Attributes defines which object properties to convert to SQL.  Refer to the class and constructor specification for more detail.
 * **db_fuel/active_record/update** [table_name, attributes, debug, register, separator, timestamps, unique_attributes]: This job can take the objects in a register and updates them within a database table.  Attributes defines which object properties to convert to SQL SET clauses while unique_attributes translate to WHERE clauses.  Refer to the class and constructor specification for more detail.
 
 ### Dbee Jobs
@@ -194,11 +194,12 @@ There should now be two new patients, AB0 and AB1, present in the table `patient
 Notes:
 
 * Since we specified the `primary_key`, the records' `id` attributes should be set to their respective primary key values.
+* Composite primary keys are not currently supported.
 * Set `debug: true` to print out each INSERT statement in the output (not for production use.)
 
 #### Inserting Only New Records
 
-Another job `db_fuel/active_record/find_or_insert` allows for an existence check to performed each insertion.  If a record is found then it will not insert the record.  If `primary_key` is set then the existence check will also still set the primary key on the payload's respective object. We can build on the above insert example for only inserting new patients if their chart_number is unique:
+Another job `db_fuel/active_record/find_or_insert` allows for an existence check to performed each insertion.  If a record is found then it will not insert the record.  If `primary_key` is set then the existence check will also still set the primary key on the payload's respective object.  Note that composite primary keys are not currently supported. We can build on the above insert example for only inserting new patients if their chart_number is unique:
 
 ````ruby
 pipeline = {

@@ -29,7 +29,7 @@ module DbFuel
         #
         #   attributes:  Used to specify which object properties to put into the
         #                SQL statement and also allows for one last custom transformation
-        #                pipeline, in case the data calls for sql-specific transformers
+        #                pipeline, in case the data calls for SQL-specific transformers
         #                before insertion.
         #
         #   debug: If debug is set to true (defaults to false) then the SQL statements and

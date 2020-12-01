@@ -97,7 +97,7 @@ describe DbFuel::Library::ActiveRecord::Update do
     context 'when debug is true' do
       let(:debug) { true }
 
-      it 'outputs sql statements' do
+      it 'outputs SQL statements' do
         expect(written).to include('Update Statement: UPDATE "patients"')
       end
 
@@ -107,7 +107,7 @@ describe DbFuel::Library::ActiveRecord::Update do
     end
 
     context 'when debug is false' do
-      it 'does not output does sql statements' do
+      it 'does not output does SQL statements' do
         expect(written).not_to include('Update Statement: UPDATE "patients"')
       end
 

@@ -9,9 +9,9 @@
 
 module DbFuel
   module Modeling
-    # Connects a hash key to a sql column.  By default if a column is not given then its
+    # Connects a hash key to a SQL column.  By default if a column is not given then its
     # key will be used for both.  The general use case for this is for mapping objects
-    # to sql and sql to objects.
+    # to SQL and SQL to objects.
     class KeyedColumn
       acts_as_hashable
 

@@ -58,7 +58,7 @@ describe DbFuel::Library::ActiveRecord::Insert do
     context 'when debug is true' do
       let(:debug) { true }
 
-      it 'outputs sql statements' do
+      it 'outputs SQL statements' do
         expect(written).to include('Insert Statement: INSERT INTO "patients"')
       end
 
@@ -68,7 +68,7 @@ describe DbFuel::Library::ActiveRecord::Insert do
     end
 
     context 'when debug is false' do
-      it 'does not output does sql statements' do
+      it 'does not output does SQL statements' do
         expect(written).not_to include('Insert Statement: INSERT INTO "patients"')
       end
 
