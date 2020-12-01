@@ -1,4 +1,4 @@
-# 1.1.0 (TBD)
+# 1.1.0 (Decmeber 1st, 2020)
 
 New Jobs:
 
