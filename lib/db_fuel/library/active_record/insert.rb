@@ -7,7 +7,7 @@
 # LICENSE file in the root directory of this source tree.
 #
 
-require_relative 'base'
+require_relative 'upsert'
 
 module DbFuel
   module Library
@@ -16,8 +16,8 @@ module DbFuel
       #
       # Expected Payload[register] input: array of objects
       # Payload[register] output: array of objects.
-      class Insert < Base
-        attr_reader :primary_key
+      class Insert < Upsert
+        #attr_reader :primary_key
 
         # Arguments:
         #   name [required]: name of the job within the Burner::Pipeline.
@@ -54,36 +54,36 @@ module DbFuel
           separator: '',
           timestamps: true
         )
-          explicit_attributes = Burner::Modeling::Attribute.array(attributes)
-
-          attributes = timestamps ? timestamp_attributes + explicit_attributes : explicit_attributes
+        
+          attributes = Burner::Modeling::Attribute.array(attributes)
 
           super(
             name: name,
             table_name: table_name,
             attributes: attributes,
             debug: debug,
+            primary_key: primary_key,
             register: register,
             separator: separator
           )
 
-          @primary_key = Modeling::KeyedColumn.make(primary_key, nullable: true)
+          # @primary_key = Modeling::KeyedColumn.make(primary_key, nullable: true)
         end
 
         def perform(output, payload)
           payload[register] = array(payload[register])
 
-          payload[register].each { |row| insert(output, row, payload.time) }
+          payload[register].each { |row| insert_record(output, row, payload.time) }
         end
 
         private
 
-        def insert(output, row, time)
-          transformed_row = transform(attribute_renderers, row, time)
+        #def insert(output, row, time)
+          #transformed_row = transform(attribute_renderers, row, time)
 
-          output_sql(output, transformed_row)
-          insert_and_mutate(output, transformed_row, row)
-        end
+          #output_sql(output, transformed_row)
+          #insert_and_mutate(output, transformed_row, row)
+        #end
 
         def output_sql(output, row)
           sql = db_provider.insert_sql(row)
@@ -97,13 +97,6 @@ module DbFuel
           resolver.set(row_to_return, primary_key.key, id) if primary_key
 
           debug_detail(output, "Insert Return: #{row_to_return}")
-        end
-
-        def timestamp_attributes
-          [
-            created_at_timestamp_attribute,
-            updated_at_timestamp_attribute
-          ]
         end
       end
     end

@@ -7,7 +7,7 @@
 # LICENSE file in the root directory of this source tree.
 #
 
-require_relative 'insert'
+require_relative 'upsert'
 
 module DbFuel
   module Library
@@ -19,8 +19,8 @@ module DbFuel
       #
       # Expected Payload[register] input: array of objects
       # Payload[register] output: array of objects.
-      class FindOrInsert < Insert
-        attr_reader :unique_attribute_renderers
+      class FindOrInsert < Upsert
+        #attr_reader :unique_attribute_renderers
 
         # Arguments:
         #   name [required]: name of the job within the Burner::Pipeline.
@@ -61,6 +61,9 @@ module DbFuel
           timestamps: true,
           unique_attributes: []
         )
+
+          attributes = Burner::Modeling::Attribute.array(attributes)
+
           super(
             name: name,
             table_name: table_name,
@@ -69,10 +72,9 @@ module DbFuel
             primary_key: primary_key,
             register: register,
             separator: separator,
-            timestamps: timestamps
+            timestamps: timestamps,
+            unique_attributes: unique_attributes
           )
-
-          @unique_attribute_renderers = make_attribute_renderers(unique_attributes)
         end
 
         def perform(output, payload)
@@ -82,14 +84,16 @@ module DbFuel
           payload[register] = array(payload[register])
 
           payload[register].each do |row|
-            exists = existence_check_and_mutate(output, row, payload.time)
+            #exists = existence_check_and_mutate(output, row, payload.time)
+
+            exists = find_record(output, row, payload.time)
 
             if exists
               total_existed += 1
               next
             end
 
-            insert(output, row, payload.time)
+            insert_record(output, row, payload.time)
 
             total_inserted += 1
           end

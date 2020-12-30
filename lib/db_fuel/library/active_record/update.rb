@@ -7,7 +7,7 @@
 # LICENSE file in the root directory of this source tree.
 #
 
-require_relative 'base'
+require_relative 'upsert'
 
 module DbFuel
   module Library
@@ -18,8 +18,8 @@ module DbFuel
       #
       # Expected Payload[register] input: array of objects
       # Payload[register] output: array of objects.
-      class Update < Base
-        attr_reader :unique_attribute_renderers
+      class Update < Upsert
+        #attr_reader :unique_attribute_renderers
 
         # Arguments:
         #   name [required]: name of the job within the Burner::Pipeline.
@@ -50,25 +50,28 @@ module DbFuel
           table_name:,
           attributes: [],
           debug: false,
+          primary_key: nil,
           register: Burner::DEFAULT_REGISTER,
           separator: '',
           timestamps: true,
           unique_attributes: []
         )
-          explicit_attributes = Burner::Modeling::Attribute.array(attributes)
-
-          attributes = timestamps ? timestamp_attributes + explicit_attributes : explicit_attributes
+        
+          attributes = Burner::Modeling::Attribute.array(attributes)
 
           super(
             name: name,
             table_name: table_name,
             attributes: attributes,
             debug: debug,
+            primary_key: primary_key,
             register: register,
-            separator: separator
+            separator: separator,
+            timestamps: timestamps,
+            unique_attributes: unique_attributes
           )
 
-          @unique_attribute_renderers = make_attribute_renderers(unique_attributes)
+          #@unique_attribute_renderers = make_attribute_renderers(unique_attributes)
 
           freeze
         end
@@ -79,14 +82,9 @@ module DbFuel
           payload[register] = array(payload[register])
 
           payload[register].each do |row|
-            set_object   = transform(attribute_renderers, row, payload.time)
             where_object = transform(unique_attribute_renderers, row, payload.time)
 
-            sql = db_provider.update_sql(set_object, where_object)
-
-            debug_detail(output, "Update Statement: #{sql}")
-
-            rows_affected = db_provider.update(set_object, where_object)
+            rows_affected = update(output, row, payload.time, where_object)
 
             debug_detail(output, "Individual Rows Affected: #{rows_affected}")
 
