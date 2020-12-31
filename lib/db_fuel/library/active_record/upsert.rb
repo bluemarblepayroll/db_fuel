@@ -127,7 +127,7 @@ module DbFuel
           raise ArgumentError, 'primary_key is required' if !primary_key
 
           # doing an INSERT and timestamps should be set, set the created_at and updated_at fields
-          dynamic_attributes = timestamps ? get_timestamp_attribute_renderers_for_insert : attribute_renderers
+          dynamic_attributes = timestamps ? get_timestamp_created_attribute_renderers : attribute_renderers
 
           set_object = transform(dynamic_attributes, row, time)
 
@@ -161,7 +161,7 @@ module DbFuel
         # Updates one or many records depending on where_object passed
         def update(output, row, time, where_object)     
           # doing an UPDATE and timestamps should be set, modify the updated_at field, don't modify the created_at field
-          dynamic_attributes = timestamps ? get_timestamp_attribute_renderers_for_update : attribute_renderers
+          dynamic_attributes = timestamps ? get_timestamp_updated_attribute_renderers : attribute_renderers
 
           set_object = transform(dynamic_attributes, row, time)
 

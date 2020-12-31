@@ -24,9 +24,10 @@ Refer to the [Burner](https://github.com/bluemarblepayroll/burner) library for m
 
 ### ActiveRecord Jobs
 
-* **db_fuel/active_record/find_or_insert** [table_name, attributes, debug, primary_key, register, separator, timestamps, unique_attributes]: An extension of the `db_fuel/active_record/insert` job that adds an existence check before SQL insertion. The  `unique_attributes` will be converted to WHERE clauses for performing the existence check.
-* **db_fuel/active_record/insert** [table_name, attributes, debug, primary_key, register, separator, timestamps]: This job can take the objects in a register and insert them into a database table.  If primary_key is specified then its key will be set to the primary key.  Note that composite primary keys are not supported.  Attributes defines which object properties to convert to SQL.  Refer to the class and constructor specification for more detail.
-* **db_fuel/active_record/update** [table_name, attributes, debug, register, separator, timestamps, unique_attributes]: This job can take the objects in a register and updates them within a database table.  Attributes defines which object properties to convert to SQL SET clauses while unique_attributes translate to WHERE clauses.  Refer to the class and constructor specification for more detail.
+* **db_fuel/active_record/find_or_insert** [name, table_name, attributes, debug, primary_key, register, separator, timestamps, unique_attributes]: An extension of the `db_fuel/active_record/insert` job that adds an existence check before SQL insertion. The  `unique_attributes` will be converted to WHERE clauses for performing the existence check.
+* **db_fuel/active_record/insert** [name, table_name, attributes, debug, primary_key, register, separator, timestamps]: This job can take the objects in a register and insert them into a database table.  If primary_key is specified then its key will be set to the primary key.  Note that composite primary keys are not supported.  Attributes defines which object properties to convert to SQL.  Refer to the class and constructor specification for more detail.
+* **db_fuel/active_record/update** [name, table_name, attributes, debug, register, separator, timestamps, unique_attributes]: This job can take the objects in a register and updates them within a database table.  Attributes defines which object properties to convert to SQL SET clauses while unique_attributes translate to WHERE clauses. One or more records may be updated at a time.  Refer to the class and constructor specification for more detail.
+* **db_fuel/active_record/upsert** [name, table_name, attributes, debug, primary_key, register, separator, timestamps, unique_attributes]: This job can take the objects in a register and either inserts or updates them within a database table.  Attributes defines which object properties to convert to SQL SET clauses while each key in unique_attributes become a WHERE clause in order to check for the existence of a specific record. The updated record will use the primary_key specified to perform the UPDATE operation. Note that composite primary keys are not supported. Refer to the class and constructor specification for more detail.
 
 ### Dbee Jobs
 
@@ -277,6 +278,51 @@ Burner::Pipeline.make(pipeline).execute(payload: payload)
 ````
 
 Each database record should have been updated with their new respective last names.
+
+#### Upserting Records
+
+Let's say we don't know if these chart_number values already exist or not. 
+So we want db_fuel to either insert a record if the chart_number doesn't exist or update the record if the chart_number already exists.
+
+````ruby
+pipeline = {
+  jobs: [
+    {
+      name: :load_patients,
+      type: 'b/value/static',
+      register: :patients,
+      value: [
+        { chart_number: 'B0002', first_name: 'Babs', last_name: 'Bunny' },
+        { chart_number: 'B0003', first_name: 'Daffy', last_name: 'Duck' }
+      ]
+    },
+    {
+      name: 'update_patients',
+      type: 'db_fuel/active_record/upsert',
+      register: :patients,
+      attributes: [
+        { key: :chart_number },
+        { key: :first_name },
+        { key: :last_name }
+      ],
+      table_name: 'patients',
+      primary_key: {
+        key: :id
+      },
+      unique_attributes: [
+        { key: :chart_number }
+      ]
+    }
+  ]
+}
+
+payload = Burner::Payload.new
+
+Burner::Pipeline.make(pipeline).execute(payload: payload)
+````
+
+Each database record should have been either inserted or updated with their corresponding values. In this case Babs' last name
+was switched back to Bunny and a new record was created for Daffy Duck.
 
 Notes:
 

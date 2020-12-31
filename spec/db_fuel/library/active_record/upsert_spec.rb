@@ -20,7 +20,7 @@ describe DbFuel::Library::ActiveRecord::Upsert do
 
   let(:output)   { make_burner_output }
   let(:register) { 'register_a' }
-  let(:debug)    { true }
+  let(:debug)    { false }
 
   let(:config) do
     {
