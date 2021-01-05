@@ -71,8 +71,6 @@ module DbFuel
           timestamp_attributes.map { |a| Burner::Modeling::AttributeRenderer.new(a, resolver) } + attribute_renderers
         end
 
-        private
-        
         def created_at_timestamp_attribute
           timestamp_attribute(CREATED_AT)
         end

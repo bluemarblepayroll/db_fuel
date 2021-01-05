@@ -17,7 +17,7 @@ module DbFuel
       # Expected Payload[register] input: array of objects
       # Payload[register] output: array of objects.
       class Insert < Upsert
-        #attr_reader :primary_key
+        # attr_reader :primary_key
 
         # Arguments:
         #   name [required]: name of the job within the Burner::Pipeline.
@@ -54,7 +54,7 @@ module DbFuel
           separator: '',
           timestamps: true
         )
-        
+
           attributes = Burner::Modeling::Attribute.array(attributes)
 
           super(
@@ -78,12 +78,12 @@ module DbFuel
 
         private
 
-        #def insert(output, row, time)
-          #transformed_row = transform(attribute_renderers, row, time)
+        # def insert(output, row, time)
+        # transformed_row = transform(attribute_renderers, row, time)
 
-          #output_sql(output, transformed_row)
-          #insert_and_mutate(output, transformed_row, row)
-        #end
+        # output_sql(output, transformed_row)
+        # insert_and_mutate(output, transformed_row, row)
+        # end
 
         def output_sql(output, row)
           sql = db_provider.insert_sql(row)

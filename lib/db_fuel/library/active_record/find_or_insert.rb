@@ -20,7 +20,7 @@ module DbFuel
       # Expected Payload[register] input: array of objects
       # Payload[register] output: array of objects.
       class FindOrInsert < Upsert
-        #attr_reader :unique_attribute_renderers
+        # attr_reader :unique_attribute_renderers
 
         # Arguments:
         #   name [required]: name of the job within the Burner::Pipeline.
@@ -84,7 +84,7 @@ module DbFuel
           payload[register] = array(payload[register])
 
           payload[register].each do |row|
-            #exists = existence_check_and_mutate(output, row, payload.time)
+            # exists = existence_check_and_mutate(output, row, payload.time)
 
             exists = find_record(output, row, payload.time)
 

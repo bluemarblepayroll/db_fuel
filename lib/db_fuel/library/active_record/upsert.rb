@@ -37,7 +37,7 @@ module DbFuel
         #                returned objects will be printed in the output.  Only use this option while
         #                debugging issues as it will fill up the output with (potentially too much) data.
         #
-        #   primary_key [required]: Used to set the object's property to the returned primary key 
+        #   primary_key [required]: Used to set the object's property to the returned primary key
         #                           from the INSERT statement or used as the WHERE clause for the UPDATE statement.
         #
         #   separator: Just like other jobs with a 'separator' option, if the objects require
@@ -46,7 +46,7 @@ module DbFuel
         #              form of: name.first).
         #
         #   timestamps: If timestamps is true (default behavior) then the updated_at column will
-        #               automatically have its value set to the current UTC timestamp if a record was updated. 
+        #               automatically have its value set to the current UTC timestamp if a record was updated.
         #               If a record was created the created_at and updated_at columns will be set.
         #
         #   unique_attributes: Each key will become a WHERE clause in order to check for the existence of a specific
@@ -54,9 +54,8 @@ module DbFuel
         def initialize(
           name:,
           table_name:,
-          attributes: [],
+          primary_key:, attributes: [],
           debug: false,
-          primary_key:,
           register: Burner::DEFAULT_REGISTER,
           separator: '',
           timestamps: true,
@@ -82,14 +81,14 @@ module DbFuel
         end
 
         def perform(output, payload)
-          raise ArgumentError, 'primary_key is required' if !primary_key
+          raise ArgumentError, 'primary_key is required' unless primary_key
 
           total_inserted = 0
           total_updated  = 0
 
           payload[register] = array(payload[register])
 
-          payload[register].each { |row| 
+          payload[register].each do |row|
             record_updated = insert_or_update(output, row, payload.time)
 
             if record_updated
@@ -97,7 +96,7 @@ module DbFuel
             else
               total_inserted += 1
             end
-          }
+          end
 
           output.detail("Total Updated: #{total_updated}")
           output.detail("Total Inserted: #{total_inserted}")
@@ -115,16 +114,16 @@ module DbFuel
           first_record = db_provider.first(unique_row)
 
           id = resolver.get(first_record, primary_key.column)
-          
+
           resolver.set(row, primary_key.key, id)
-          
+
           debug_detail(output, "Record Exists: #{first_record}") if first_record
 
-          return first_record
+          first_record
         end
-        
+
         def insert_record(output, row, time)
-          raise ArgumentError, 'primary_key is required' if !primary_key
+          raise ArgumentError, 'primary_key is required' unless primary_key
 
           # doing an INSERT and timestamps should be set, set the created_at and updated_at fields
           dynamic_attributes = timestamps ? get_timestamp_created_attribute_renderers : attribute_renderers
@@ -151,42 +150,42 @@ module DbFuel
 
             id = resolver.get(first_record, primary_key.column)
 
-            where_object = {primary_key.key => id}
+            where_object = { primary_key.key => id}
 
             # update record using the primary key as the WHERE clause
-            return update(output, row, time, where_object)  
+            update(output, row, time, where_object)
           end
         end
 
         # Updates one or many records depending on where_object passed
-        def update(output, row, time, where_object)     
+        def update(output, row, time, where_object)
           # doing an UPDATE and timestamps should be set, modify the updated_at field, don't modify the created_at field
           dynamic_attributes = timestamps ? get_timestamp_updated_attribute_renderers : attribute_renderers
 
           set_object = transform(dynamic_attributes, row, time)
 
           update_sql = db_provider.update_sql(set_object, where_object)
-          
+
           debug_detail(output, "Update Statement: #{update_sql}")
 
           debug_detail(output, "Update Return: #{row}")
 
-          return row_affected = db_provider.update(set_object, where_object)
+          row_affected = db_provider.update(set_object, where_object)
         end
 
         private
 
         def insert_or_update(output, row, time)
-          #first_record = find_record(output, row, time)
+          # first_record = find_record(output, row, time)
 
           first_record = update_record(output, row, time)
 
           if first_record
-            return first_record
+            first_record
           else
             # create the record
             insert_record(output, row, time)
-            return nil
+            nil
           end
         end
       end

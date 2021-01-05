@@ -99,7 +99,7 @@ describe DbFuel::Library::ActiveRecord::Upsert do
       payload[register].each do |object|
         expected = Patient.find_by(chart_number: object['chart_number']).id
         actual   = object['id']
-        
+
         expect(actual).to eq(expected)
       end
     end
@@ -108,7 +108,7 @@ describe DbFuel::Library::ActiveRecord::Upsert do
       patient = Patient.find_by(chart_number: 'G0001')
       updated_at = patient.updated_at.to_s(:db)
       created_at = patient.created_at.to_s(:db)
-      
+
       expect(updated_at).to eq(created_at)
     end
 
@@ -116,10 +116,9 @@ describe DbFuel::Library::ActiveRecord::Upsert do
       patient = Patient.find_by(chart_number: 'C0001')
       updated_at = patient.updated_at.to_s(:db)
       created_at = patient.created_at.to_s(:db)
-      
+
       expect(updated_at).not_to eq(created_at)
     end
-  
 
     context 'when debug is true' do
       let(:debug) { true }
