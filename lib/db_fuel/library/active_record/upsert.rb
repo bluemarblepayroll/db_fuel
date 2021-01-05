@@ -123,7 +123,7 @@ module DbFuel
         end
 
         def insert_record(output, row, time)
-          raise ArgumentError, 'primary_key is required' unless primary_key
+          # raise ArgumentError, 'primary_key is required' unless primary_key
 
           # doing an INSERT and timestamps should be set, set the created_at and updated_at fields
           dynamic_attributes = timestamps ? get_timestamp_created_attribute_renderers : attribute_renderers
@@ -136,13 +136,16 @@ module DbFuel
 
           id = db_provider.insert(set_object)
 
-          resolver.set(row, primary_key.key, id)
+          # add the primary key name and value to row if primary_key was specified
+          resolver.set(row, primary_key.key, id) if primary_key
 
           debug_detail(output, "Insert Return: #{row}")
         end
 
         # Updates only a single record. Lookups primary key to update the record.
         def update_record(output, row, time)
+          raise ArgumentError, 'primary_key is required' unless primary_key
+
           first_record = find_record(output, row, time)
 
           if first_record
@@ -150,11 +153,13 @@ module DbFuel
 
             id = resolver.get(first_record, primary_key.column)
 
-            where_object = { primary_key.key => id}
+            where_object = { primary_key.key => id }
 
             # update record using the primary key as the WHERE clause
             update(output, row, time, where_object)
           end
+
+          first_record
         end
 
         # Updates one or many records depending on where_object passed
@@ -176,8 +181,6 @@ module DbFuel
         private
 
         def insert_or_update(output, row, time)
-          # first_record = find_record(output, row, time)
-
           first_record = update_record(output, row, time)
 
           if first_record
