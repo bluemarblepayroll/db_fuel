@@ -35,10 +35,12 @@ module DbFuel
         #
         #   debug:       If debug is set to true (defaults to false) then the SQL statements and
         #                returned objects will be printed in the output.  Only use this option while
-        #                debugging issues as it will fill up the output with (potentially too much) data.
+        #                debugging issues as it will fill
+        #                up the output with (potentially too much) data.
         #
         #   primary_key [required]: Used to set the object's property to the returned primary key
-        #                           from the INSERT statement or used as the WHERE clause for the UPDATE statement.
+        #                           from the INSERT statement or used as the
+        #                           WHERE clause for the UPDATE statement.
         #
         #   separator: Just like other jobs with a 'separator' option, if the objects require
         #              key-path notation or nested object support, you can set the separator
@@ -46,22 +48,24 @@ module DbFuel
         #              form of: name.first).
         #
         #   timestamps: If timestamps is true (default behavior) then the updated_at column will
-        #               automatically have its value set to the current UTC timestamp if a record was updated.
-        #               If a record was created the created_at and updated_at columns will be set.
+        #               automatically have its value set
+        #               to the current UTC timestamp if a record was updated.
+        #               If a record was created the
+        #               created_at and updated_at columns will be set.
         #
-        #   unique_attributes: Each key will become a WHERE clause in order to check for the existence of a specific
-        #                      record.
+        #   unique_attributes: Each key will become a WHERE clause in
+        #                      order to check for the existence of a specific record.
         def initialize(
           name:,
           table_name:,
-          primary_key:, attributes: [],
+          primary_key:,
+          attributes: [],
           debug: false,
           register: Burner::DEFAULT_REGISTER,
           separator: '',
           timestamps: true,
           unique_attributes: []
         )
-
           super(
             name: name,
             table_name: table_name,
@@ -73,7 +77,8 @@ module DbFuel
 
           @primary_key = Modeling::KeyedColumn.make(primary_key, nullable: true)
 
-          @unique_attribute_renderers = make_attribute_renderers(unique_attributes)
+          @unique_attribute_renderers = attribute_renderers_set
+                                        .make_attribute_renderers(unique_attributes)
 
           @timestamps = timestamps
 
@@ -105,7 +110,7 @@ module DbFuel
         protected
 
         def find_record(output, row, time)
-          unique_row = transform(unique_attribute_renderers, row, time)
+          unique_row = attribute_renderers_set.transform(unique_attribute_renderers, row, time)
 
           first_sql = db_provider.first_sql(unique_row)
 
@@ -123,12 +128,15 @@ module DbFuel
         end
 
         def insert_record(output, row, time)
-          # raise ArgumentError, 'primary_key is required' unless primary_key
+          dynamic_attrs = if timestamps
+                            # doing an INSERT and timestamps should be set
+                            # set the created_at and updated_at fields
+                            attribute_renderers_set.timestamp_created_attribute_renderers
+                          else
+                            attribute_renderer_set.attribute_renderers
+                          end
 
-          # doing an INSERT and timestamps should be set, set the created_at and updated_at fields
-          dynamic_attributes = timestamps ? get_timestamp_created_attribute_renderers : attribute_renderers
-
-          set_object = transform(dynamic_attributes, row, time)
+          set_object = attribute_renderers_set.transform(dynamic_attrs, row, time)
 
           insert_sql = db_provider.insert_sql(set_object)
 
@@ -164,10 +172,15 @@ module DbFuel
 
         # Updates one or many records depending on where_object passed
         def update(output, row, time, where_object)
-          # doing an UPDATE and timestamps should be set, modify the updated_at field, don't modify the created_at field
-          dynamic_attributes = timestamps ? get_timestamp_updated_attribute_renderers : attribute_renderers
+          dynamic_attrs = if timestamps
+                            # doing an UPDATE and timestamps should be set,
+                            # modify the updated_at field, don't modify the created_at field
+                            attribute_renderers_set.timestamp_updated_attribute_renderers
+                          else
+                            attribute_renderer_set.attribute_renderers
+                          end
 
-          set_object = transform(dynamic_attributes, row, time)
+          set_object = attribute_renderers_set.transform(dynamic_attrs, row, time)
 
           update_sql = db_provider.update_sql(set_object, where_object)
 
@@ -175,7 +188,7 @@ module DbFuel
 
           debug_detail(output, "Update Return: #{row}")
 
-          row_affected = db_provider.update(set_object, where_object)
+          db_provider.update(set_object, where_object)
         end
 
         private

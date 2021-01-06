@@ -22,7 +22,8 @@ module DbFuel
         attr_reader :attribute_renderers,
                     :db_provider,
                     :debug,
-                    :resolver
+                    :resolver,
+                    :attribute_renderers_set
 
         def initialize(
           name:,
@@ -34,59 +35,14 @@ module DbFuel
         )
           super(name: name, register: register)
 
-          # set resolver first since make_attribute_renderers needs it.
-          @resolver            = Objectable.resolver(separator: separator)
-          @attribute_renderers = make_attribute_renderers(attributes)
-          @db_provider         = DbProvider.new(table_name)
+          @resolver = Objectable.resolver(separator: separator)
+          @attribute_renderers_set = Modeling::AttributeRendererSet.new(attributes: attributes,
+                                                                        resolver: resolver)
+          @db_provider = DbProvider.new(table_name)
           @debug = debug || false
         end
 
         private
-
-        def make_attribute_renderers(attributes)
-          Burner::Modeling::Attribute
-            .array(attributes)
-            .map { |a| Burner::Modeling::AttributeRenderer.new(a, resolver) }
-        end
-
-        def transform(attribute_renderers, row, time)
-          attribute_renderers.each_with_object({}) do |attribute_renderer, memo|
-            value = attribute_renderer.transform(row, time)
-
-            resolver.set(memo, attribute_renderer.key, value)
-          end
-        end
-
-        # Adds the attributes for created_at and updated_at to the currrent attribute renderers.
-        def get_timestamp_created_attribute_renderers
-          timestamp_attributes = [created_at_timestamp_attribute, updated_at_timestamp_attribute]
-
-          timestamp_attributes.map { |a| Burner::Modeling::AttributeRenderer.new(a, resolver) } + attribute_renderers
-        end
-
-        # Adds the attribute for updated_at to the currrent attribute renderers.
-        def get_timestamp_updated_attribute_renderers
-          timestamp_attributes = [updated_at_timestamp_attribute]
-
-          timestamp_attributes.map { |a| Burner::Modeling::AttributeRenderer.new(a, resolver) } + attribute_renderers
-        end
-
-        def created_at_timestamp_attribute
-          timestamp_attribute(CREATED_AT)
-        end
-
-        def updated_at_timestamp_attribute
-          timestamp_attribute(UPDATED_AT)
-        end
-
-        def timestamp_attribute(key)
-          Burner::Modeling::Attribute.make(
-            key: key,
-            transformers: [
-              { type: NOW_TYPE }
-            ]
-          )
-        end
 
         def debug_detail(output, message)
           return unless debug

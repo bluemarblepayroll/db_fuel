@@ -14,7 +14,8 @@ module DbFuel
     module ActiveRecord
       # This job can take the unique objects in a register and updates them within database table.
       # The attributes translate to SQL SET clauses and the unique_keys translate to
-      # WHERE clauses to find the records to update. The primary_key is used to update the unique record.
+      # WHERE clauses to find the records to update.
+      # The primary_key is used to update the unique record.
       #
       # Expected Payload[register] input: array of objects
       # Payload[register] output: array of objects.
@@ -35,7 +36,8 @@ module DbFuel
         #
         #   primary_key [required]: Primary key column for the corresponding table.
         #                           Used as the WHERE clause for the UPDATE statement.
-        #                           Only one record will be updated at a time using the primary key specified.
+        #                           Only one record will be updated at a time
+        #                           using the primary key specified.
         #
         #   separator: Just like other jobs with a 'separator' option, if the objects require
         #              key-path notation or nested object support, you can set the separator
@@ -46,7 +48,8 @@ module DbFuel
         #               automatically have its value set to the current UTC timestamp.
         #
         #   unique_attributes: Each key will become a WHERE clause in order to only find specific
-        #                      records. The UPDATE statement's WHERE clause will use the primary key specified.
+        #                      records. The UPDATE statement's WHERE
+        #                      clause will use the primary key specified.
         def initialize(
           name:,
           table_name:,

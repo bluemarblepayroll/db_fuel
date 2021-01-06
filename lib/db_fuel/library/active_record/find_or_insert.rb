@@ -62,8 +62,6 @@ module DbFuel
           unique_attributes: []
         )
 
-          attributes = Burner::Modeling::Attribute.array(attributes)
-
           super(
             name: name,
             table_name: table_name,
@@ -84,8 +82,6 @@ module DbFuel
           payload[register] = array(payload[register])
 
           payload[register].each do |row|
-            # exists = existence_check_and_mutate(output, row, payload.time)
-
             exists = find_record(output, row, payload.time)
 
             if exists
@@ -100,29 +96,6 @@ module DbFuel
 
           output.detail("Total Existed: #{total_existed}")
           output.detail("Total Inserted: #{total_inserted}")
-        end
-
-        private
-
-        def existence_check_and_mutate(output, row, time)
-          unique_row = transform(unique_attribute_renderers, row, time)
-
-          first_sql = db_provider.first_sql(unique_row)
-          debug_detail(output, "Find Statement: #{first_sql}")
-
-          first_record = db_provider.first(unique_row)
-
-          return false unless first_record
-
-          if primary_key
-            id = resolver.get(first_record, primary_key.column)
-
-            resolver.set(row, primary_key.key, id)
-          end
-
-          debug_detail(output, "Record Exists: #{first_record}")
-
-          true
         end
       end
     end

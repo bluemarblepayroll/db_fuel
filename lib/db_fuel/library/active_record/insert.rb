@@ -64,7 +64,8 @@ module DbFuel
             debug: debug,
             primary_key: primary_key,
             register: register,
-            separator: separator
+            separator: separator,
+            timestamps: timestamps
           )
         end
 

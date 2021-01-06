@@ -19,8 +19,6 @@ module DbFuel
       # Expected Payload[register] input: array of objects
       # Payload[register] output: array of objects.
       class UpdateAll < Upsert
-        # attr_reader :unique_attribute_renderers
-
         # Arguments:
         #   name [required]: name of the job within the Burner::Pipeline.
         #
