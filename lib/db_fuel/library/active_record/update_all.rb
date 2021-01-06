@@ -77,7 +77,8 @@ module DbFuel
           payload[register] = array(payload[register])
 
           payload[register].each do |row|
-            where_object = transform(unique_attribute_renderers, row, payload.time)
+            where_object = attribute_renderers_set
+                           .transform(unique_attribute_renderers, row, payload.time)
 
             rows_affected = update(output, row, payload.time, where_object)
 

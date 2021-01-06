@@ -20,6 +20,8 @@ module DbFuel
       attr_reader :attribute_renderers, :resolver
 
       def initialize(attributes: [], resolver: nil)
+        raise ArgumentError, 'resolver is required' unless resolver
+
         @resolver            = resolver
         @attribute_renderers = make_attribute_renderers(attributes)
 
