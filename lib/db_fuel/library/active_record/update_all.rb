@@ -13,8 +13,9 @@ module DbFuel
   module Library
     module ActiveRecord
       # This job can take the objects in a register and updates them within database table.
-      # The attributes translate to SQL SET clauses and the unique_keys translate to
-      # WHERE clauses.
+      # The attributes translate to SQL SET clauses
+      # and the unique_keys translate to WHERE clauses.
+      # One or more records may be updated at a time.
       #
       # Expected Payload[register] input: array of objects
       # Payload[register] output: array of objects.

@@ -35,7 +35,7 @@ describe DbFuel::Modeling::KeyedColumn do
   describe 'KeyedColumn' do
     context 'when key has not been set' do
       it 'raises ArgumentError' do
-        expect do 
+        expect do
           described_class.make(key: nil, column: 'id')
         end.to raise_error(ActsAsHashable::Hashable::HydrationError)
       end

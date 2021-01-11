@@ -16,6 +16,7 @@ module DbFuel
       # The attributes translate to SQL SET clauses and the unique_keys translate to
       # WHERE clauses to find the records to update.
       # The primary_key is used to update the unique record.
+      # Only one record will be updated per statement.
       #
       # Expected Payload[register] input: array of objects
       # Payload[register] output: array of objects.
