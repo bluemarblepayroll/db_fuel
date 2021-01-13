@@ -11,8 +11,8 @@ Gem::Specification.new do |s|
     This library adds database-centric jobs to the Burner library.  Burner does not ship with database jobs out of the box.
   DESCRIPTION
 
-  s.authors     = ['Matthew Ruggio']
-  s.email       = ['mruggio@bluemarblepayroll.com']
+  s.authors     = ['Matthew Ruggio', 'John Bosko']
+  s.email       = ['mruggio@bluemarblepayroll.com', 'jbosko@bluemarblepayroll.com']
   s.files       = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   s.bindir      = 'exe'
   s.executables = %w[]
