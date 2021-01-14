@@ -8,5 +8,5 @@
 #
 
 module DbFuel
-  VERSION = '1.2.0-alpha'
+  VERSION = '1.2.1-alpha'
 end
