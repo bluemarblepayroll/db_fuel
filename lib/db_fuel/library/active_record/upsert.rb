@@ -133,7 +133,7 @@ module DbFuel
                             # set the created_at and updated_at fields
                             attribute_renderers_set.timestamp_created_attribute_renderers
                           else
-                            attribute_renderer_set.attribute_renderers
+                            attribute_renderers_set.attribute_renderers
                           end
 
           set_object = attribute_renderers_set.transform(dynamic_attrs, row, time)
@@ -177,7 +177,7 @@ module DbFuel
                             # modify the updated_at field, don't modify the created_at field
                             attribute_renderers_set.timestamp_updated_attribute_renderers
                           else
-                            attribute_renderer_set.attribute_renderers
+                            attribute_renderers_set.attribute_renderers
                           end
 
           set_object = attribute_renderers_set.transform(dynamic_attrs, row, time)

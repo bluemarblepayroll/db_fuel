@@ -21,6 +21,7 @@ describe DbFuel::Library::ActiveRecord::Upsert do
   let(:output)   { make_burner_output }
   let(:register) { 'register_a' }
   let(:debug)    { false }
+  let(:timestamps) { true }
 
   let(:config) do
     {
@@ -34,6 +35,7 @@ describe DbFuel::Library::ActiveRecord::Upsert do
       ],
       table_name: 'patients',
       primary_key: { key: :id },
+      timestamps: timestamps,
       unique_attributes: [
         { key: :chart_number }
       ]
@@ -134,6 +136,69 @@ describe DbFuel::Library::ActiveRecord::Upsert do
 
       it 'outputs new record' do
         expect(written).to include('Insert Return:')
+      end
+    end
+
+    context 'when timestamps is false' do
+      let(:timestamps) { false }
+
+      let(:patients) do
+        [
+          # insert new record
+          { 'chart_number' => 'Z0001', 'first_name' => 'Daffy', 'last_name' => 'Duck' },
+
+          # update existing record
+          { 'chart_number' => 'C0001', 'first_name' => 'Cookie', 'last_name' => 'Clown' }
+        ]
+      end
+
+      let(:payload) do
+        Burner::Payload.new(
+          registers: {
+            register => patients.map { |p| {}.merge(p) } # shallow copy to preserve original
+          }
+        )
+      end
+
+      # get the current values for existing record
+      let(:existingPatient) { Patient.find_by(chart_number: 'C0001') }
+
+      before(:each) do
+        subject.perform(output, payload)
+      end
+
+      it 'do not set/update timestamps for records' do
+        actual = Patient
+                 .order(:chart_number)
+                 .select(:chart_number, :first_name, :last_name)
+                 .where({ chart_number: %w[Z0001 C0001] })
+                 .as_json(except: :id)
+
+        expected = [
+          { 'chart_number' => 'C0001', 'first_name' => 'Cookie', 'last_name' => 'Clown' },
+          { 'chart_number' => 'Z0001', 'first_name' => 'Daffy', 'last_name' => 'Duck' }
+        ]
+
+        expect(actual.count).to eq(2)
+        expect(actual).to       eq(expected)
+      end
+
+      it 'checks if created_at and updated_at equals null for new record.' do
+        patient = Patient.find_by(chart_number: 'Z0001')
+        created_at = patient.created_at
+        updated_at = patient.updated_at
+
+        expect(created_at).to eq(nil)
+        expect(updated_at).to eq(nil)
+      end
+
+      it 'checks if created_at and updated_at equals previous timestamps for updated record.' do
+        patient = Patient.find_by(chart_number: 'C0001')
+        created_at = patient.created_at.to_s(:db)
+        updated_at = patient.updated_at.to_s(:db)
+
+        expect(created_at).to eq(existingPatient.created_at.to_s(:db))
+        expect(updated_at).to eq(existingPatient.updated_at.to_s(:db))
       end
     end
   end
