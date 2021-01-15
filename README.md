@@ -32,8 +32,8 @@ Refer to the [Burner](https://github.com/bluemarblepayroll/burner) library for m
 
 ### Dbee Jobs
 
-* **db_fuel/dbee/query** [model, query, register]:  Pass in a [Dbee](https://github.com/bluemarblepayroll/dbee) model and query and store the results in the specified register.  Refer to the [Dbee](https://github.com/bluemarblepayroll/dbee) library directly on how to craft a model or query.
-* **db_fuel/dbee/range** [key, key_path, model, query, register, separator]: Similar to `db_fuel/dbee/query` with the addition of being able to grab a list of values from the register to use as a Dbee EQUALS/IN filter.  This helps to dynamically limit the resulting record set.  The key is used to specify where to grab the list of values, while the key_path will be used to craft the [Dbee equal's filter](https://github.com/bluemarblepayroll/dbee/blob/master/lib/dbee/query/filters/equals.rb).  Separator is exposed in case nested object support is necessary.
+* **db_fuel/dbee/query** [model, query, register, debug]:  Pass in a [Dbee](https://github.com/bluemarblepayroll/dbee) model and query and store the results in the specified register.  Refer to the [Dbee](https://github.com/bluemarblepayroll/dbee) library directly on how to craft a model or query.
+* **db_fuel/dbee/range** [key, key_path, model, query, register, separator, debug]: Similar to `db_fuel/dbee/query` with the addition of being able to grab a list of values from the register to use as a Dbee EQUALS/IN filter.  This helps to dynamically limit the resulting record set.  The key is used to specify where to grab the list of values, while the key_path will be used to craft the [Dbee equal's filter](https://github.com/bluemarblepayroll/dbee/blob/master/lib/dbee/query/filters/equals.rb).  Separator is exposed in case nested object support is necessary.
 
 ## Examples
 
@@ -98,6 +98,10 @@ If we were to inspect the contents of `payload` we should see the patient's resu
 payload['patients'] # array in form of: [ { "id" => 1, "first_name" => "Something" }, ... ]
 ````
 
+Notes
+
+* Set `debug: true` to print out SQL statement in the output (not for production use.)
+
 ### Limiting Result Sets
 
 The `db_fuel/dbee/query` does not provide a way to dynamically connect the query to existing data.  You are free to put any Dbee query filters in the query declaration, but what if you would like to further limit this based on the knowledge of a range of values?  The `db_fuel/dbee/range` job is meant to do exactly this.  On the surface it is mainly an extension of the `db_fuel/dbee/query` job.
@@ -150,6 +154,10 @@ payload['patients'] # array in form of: [ { "id" => 1, "first_name" => "Somethin
 ````
 
 The only difference between the query and range jobs should be the latter is limited based on the incoming first names.
+
+Notes
+
+* Set `debug: true` to print out SQL statement in the output (not for production use.)
 
 ### Updating the Database
 

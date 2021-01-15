@@ -42,7 +42,7 @@ module DbFuel
           @debug = debug || false
         end
 
-        private
+        protected
 
         def debug_detail(output, message)
           return unless debug
