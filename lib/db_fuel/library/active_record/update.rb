@@ -52,8 +52,8 @@ module DbFuel
         #                      records. The UPDATE statement's WHERE
         #                      clause will use the primary key specified.
         def initialize(
-          name:,
           table_name:,
+          name: '',
           attributes: [],
           debug: false,
           primary_key: nil,

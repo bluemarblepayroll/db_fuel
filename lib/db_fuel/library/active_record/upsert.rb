@@ -56,9 +56,9 @@ module DbFuel
         #   unique_attributes: Each key will become a WHERE clause in
         #                      order to check for the existence of a specific record.
         def initialize(
-          name:,
           table_name:,
           primary_key:,
+          name: '',
           attributes: [],
           debug: false,
           register: Burner::DEFAULT_REGISTER,

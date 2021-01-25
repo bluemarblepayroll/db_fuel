@@ -38,8 +38,8 @@ module DbFuel
         #              debugging issues as it will fill
         #              up the output with (potentially too much) data.
         def initialize(
-          name:,
           key:,
+          name: '',
           key_path: '',
           model: {},
           query: {},

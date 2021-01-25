@@ -26,8 +26,8 @@ module DbFuel
                     :attribute_renderers_set
 
         def initialize(
-          name:,
           table_name:,
+          name: '',
           attributes: [],
           debug: false,
           register: Burner::DEFAULT_REGISTER,

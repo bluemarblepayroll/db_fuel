@@ -45,8 +45,8 @@ module DbFuel
         #   unique_attributes: Each key will become a WHERE clause in order to only update specific
         #                      records.
         def initialize(
-          name:,
           table_name:,
+          name: '',
           attributes: [],
           debug: false,
           register: Burner::DEFAULT_REGISTER,

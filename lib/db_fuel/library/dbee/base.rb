@@ -23,7 +23,7 @@ module DbFuel
         # - register: Name of the register to use for gathering the IN clause values and where
         #             to store the resulting recordset.
         def initialize(
-          name:,
+          name: '',
           model: {},
           query: {},
           register: Burner::DEFAULT_REGISTER,

@@ -45,8 +45,8 @@ module DbFuel
         #               and updated_at columns will automatically have their values set
         #               to the current UTC timestamp.
         def initialize(
-          name:,
           table_name:,
+          name: '',
           attributes: [],
           debug: false,
           primary_key: nil,

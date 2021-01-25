@@ -51,8 +51,8 @@ module DbFuel
         #   unique_attributes: Each key will become a WHERE clause in order check for record
         #                      existence before insertion attempt.
         def initialize(
-          name:,
           table_name:,
+          name: '',
           attributes: [],
           debug: false,
           primary_key: nil,

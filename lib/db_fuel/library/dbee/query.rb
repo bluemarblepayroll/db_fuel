@@ -31,7 +31,7 @@ module DbFuel
         #              debugging issues as it will fill
         #              up the output with (potentially too much) data.
         def initialize(
-          name:,
+          name: '',
           model: {},
           query: {},
           register: Burner::DEFAULT_REGISTER,
