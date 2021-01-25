@@ -23,7 +23,7 @@ module DbFuel
         # attr_reader :unique_attribute_renderers
 
         # Arguments:
-        #   name [required]: name of the job within the Burner::Pipeline.
+        #   name: name of the job within the Burner::Pipeline.
         #
         #   table_name [required]: name of the table to use for the INSERT statements.
         #

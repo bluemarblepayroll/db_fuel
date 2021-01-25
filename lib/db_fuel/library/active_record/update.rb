@@ -22,7 +22,7 @@ module DbFuel
       # Payload[register] output: array of objects.
       class Update < Upsert
         # Arguments:
-        #   name [required]: name of the job within the Burner::Pipeline.
+        #   name: name of the job within the Burner::Pipeline.
         #
         #   table_name [required]: name of the table to use for the INSERT statements.
         #
