@@ -161,7 +161,7 @@ module DbFuel
 
             id = resolver.get(first_record, primary_key.column)
 
-            where_object = { primary_key.key => id }
+            where_object = { primary_key.column => id }
 
             # update record using the primary key as the WHERE clause
             update(output, row, time, where_object)
