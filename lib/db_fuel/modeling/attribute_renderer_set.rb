@@ -12,18 +12,24 @@ module DbFuel
     # Creates attribute renderers based on attributes passed.
     # Also constains methods to transform attribute renderers
     # and include timestamp attributes if needed.
-    class AttributeRendererSet
-      CREATED_AT = :created_at
+    class AttributeRendererSet # :nodoc:
       NOW_TYPE   = 'r/value/now'
-      UPDATED_AT = :updated_at
+
+      CREATED_AT = Burner::Modeling::Attribute.make(
+        key: :created_at, transformers: [{ type: NOW_TYPE }]
+      )
+
+      UPDATED_AT = Burner::Modeling::Attribute.make(
+        key: :updated_at, transformers: [{ type: NOW_TYPE }]
+      )
 
       attr_reader :attribute_renderers, :resolver
 
-      def initialize(attributes: [], resolver: nil)
+      def initialize(resolver:, attributes: [])
         raise ArgumentError, 'resolver is required' unless resolver
 
         @resolver            = resolver
-        @attribute_renderers = make_attribute_renderers(attributes)
+        @attribute_renderers = make_renderers(attributes)
 
         freeze
       end
@@ -46,7 +52,7 @@ module DbFuel
         end + attribute_renderers
       end
 
-      def make_attribute_renderers(attributes)
+      def make_renderers(attributes)
         Burner::Modeling::Attribute
           .array(attributes)
           .map { |a| Burner::Modeling::AttributeRenderer.new(a, resolver) }
@@ -63,20 +69,11 @@ module DbFuel
       private
 
       def created_at_timestamp_attribute
-        timestamp_attribute(CREATED_AT)
+        CREATED_AT
       end
 
       def updated_at_timestamp_attribute
-        timestamp_attribute(UPDATED_AT)
-      end
-
-      def timestamp_attribute(key)
-        Burner::Modeling::Attribute.make(
-          key: key,
-          transformers: [
-            { type: NOW_TYPE }
-          ]
-        )
+        UPDATED_AT
       end
     end
   end

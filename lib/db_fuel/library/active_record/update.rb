@@ -15,7 +15,7 @@ module DbFuel
       # This job can take the unique objects in a register and updates them within database table.
       # The attributes translate to SQL SET clauses and the unique_keys translate to
       # WHERE clauses to find the records to update.
-      # The primary_key is used to update the unique record.
+      # The primary_keyed_column is used to update the unique record.
       # Only one record will be updated per statement.
       #
       # Expected Payload[register] input: array of objects
@@ -35,7 +35,7 @@ module DbFuel
         #          returned objects will be printed in the output.  Only use this option while
         #          debugging issues as it will fill up the output with (potentially too much) data.
         #
-        #   primary_key [required]: Primary key column for the corresponding table.
+        #   primary_keyed_column [required]: Primary key column for the corresponding table.
         #                           Used as the WHERE clause for the UPDATE statement.
         #                           Only one record will be updated at a time
         #                           using the primary key specified.
@@ -56,7 +56,7 @@ module DbFuel
           name: '',
           attributes: [],
           debug: false,
-          primary_key: nil,
+          primary_keyed_column: nil,
           register: Burner::DEFAULT_REGISTER,
           separator: '',
           timestamps: true,
@@ -70,7 +70,7 @@ module DbFuel
             table_name: table_name,
             attributes: attributes,
             debug: debug,
-            primary_key: primary_key,
+            primary_keyed_column: primary_keyed_column,
             register: register,
             separator: separator,
             timestamps: timestamps,

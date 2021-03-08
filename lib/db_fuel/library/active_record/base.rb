@@ -36,8 +36,8 @@ module DbFuel
           super(name: name, register: register)
 
           @resolver = Objectable.resolver(separator: separator)
-          @attribute_renderers_set = Modeling::AttributeRendererSet.new(attributes: attributes,
-                                                                        resolver: resolver)
+          @attribute_renderers_set = Modeling::AttributeRendererSet.new(resolver: resolver,
+                                                                        attributes: attributes)
           @db_provider = DbProvider.new(table_name)
           @debug = debug || false
         end

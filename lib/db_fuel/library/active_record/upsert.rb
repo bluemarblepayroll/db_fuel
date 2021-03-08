@@ -16,12 +16,12 @@ module DbFuel
       # It will use the unique_keys to first run a query to see if it exists.
       # Each unique_key becomes a WHERE clause. If a record is found it will then
       # update the found record using the primary key specified.
-      # If a record is updated or created the record's id will be set to the primary_key.
+      # If a record is updated or created the record's id will be set to the primary_keyed_column.
       #
       # Expected Payload[register] input: array of objects
       # Payload[register] output: array of objects.
       class Upsert < Base
-        attr_reader :primary_key, :timestamps, :unique_attribute_renderers
+        attr_reader :primary_keyed_column, :timestamps, :unique_attribute_renderers
 
         # Arguments:
         #   name: name of the job within the Burner::Pipeline.
@@ -38,9 +38,10 @@ module DbFuel
         #                debugging issues as it will fill
         #                up the output with (potentially too much) data.
         #
-        #   primary_key [required]: Used to set the object's property to the returned primary key
-        #                           from the INSERT statement or used as the
-        #                           WHERE clause for the UPDATE statement.
+        #   primary_keyed_column [required]: Used to set the object's property to the
+        #                                returned primary key from the
+        #                                INSERT statement or used as the
+        #                                WHERE clause for the UPDATE statement.
         #
         #   separator: Just like other jobs with a 'separator' option, if the objects require
         #              key-path notation or nested object support, you can set the separator
@@ -57,7 +58,7 @@ module DbFuel
         #                      order to check for the existence of a specific record.
         def initialize(
           table_name:,
-          primary_key:,
+          primary_keyed_column:,
           name: '',
           attributes: [],
           debug: false,
@@ -75,10 +76,10 @@ module DbFuel
             separator: separator
           )
 
-          @primary_key = Modeling::KeyedColumn.make(primary_key, nullable: true)
+          @primary_keyed_column = Modeling::KeyedColumn.make(primary_keyed_column, nullable: true)
 
           @unique_attribute_renderers = attribute_renderers_set
-                                        .make_attribute_renderers(unique_attributes)
+                                        .make_renderers(unique_attributes)
 
           @timestamps = timestamps
 
@@ -86,7 +87,7 @@ module DbFuel
         end
 
         def perform(output, payload)
-          raise ArgumentError, 'primary_key is required' unless primary_key
+          raise ArgumentError, 'primary_keyed_column is required' unless primary_keyed_column
 
           total_inserted = 0
           total_updated  = 0
@@ -118,9 +119,9 @@ module DbFuel
 
           first_record = db_provider.first(unique_row)
 
-          id = resolver.get(first_record, primary_key.column)
+          id = resolver.get(first_record, primary_keyed_column.column)
 
-          resolver.set(row, primary_key.key, id)
+          resolver.set(row, primary_keyed_column.key, id)
 
           debug_detail(output, "Record Exists: #{first_record}") if first_record
 
@@ -144,24 +145,24 @@ module DbFuel
 
           id = db_provider.insert(set_object)
 
-          # add the primary key name and value to row if primary_key was specified
-          resolver.set(row, primary_key.key, id) if primary_key
+          # add the primary key name and value to row if primary_keyed_column was specified
+          resolver.set(row, primary_keyed_column.key, id) if primary_keyed_column
 
           debug_detail(output, "Insert Return: #{row}")
         end
 
         # Updates only a single record. Lookups primary key to update the record.
         def update_record(output, row, time)
-          raise ArgumentError, 'primary_key is required' unless primary_key
+          raise ArgumentError, 'primary_keyed_column is required' unless primary_keyed_column
 
           first_record = find_record(output, row, time)
 
           if first_record
             debug_detail(output, "Record Exists: #{first_record}")
 
-            id = resolver.get(first_record, primary_key.column)
+            id = resolver.get(first_record, primary_keyed_column.column)
 
-            where_object = { primary_key.column => id }
+            where_object = { primary_keyed_column.column => id }
 
             # update record using the primary key as the WHERE clause
             update(output, row, time, where_object)

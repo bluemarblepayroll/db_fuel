@@ -17,8 +17,6 @@ module DbFuel
       # Expected Payload[register] input: array of objects
       # Payload[register] output: array of objects.
       class Insert < Upsert
-        # attr_reader :primary_key
-
         # Arguments:
         #   name: name of the job within the Burner::Pipeline.
         #
@@ -33,8 +31,9 @@ module DbFuel
         #          returned objects will be printed in the output.  Only use this option while
         #          debugging issues as it will fill up the output with (potentially too much) data.
         #
-        #   primary_key: If primary_key is present then it will be used to set the object's
-        #                property to the returned primary key from the INSERT statement.
+        #   primary_keyed_column: If primary_keyed_column is present then it will be used to
+        #                     set the object's property to the returned primary key
+        #                     from the INSERT statement.
         #
         #   separator: Just like other jobs with a 'separator' option, if the objects require
         #              key-path notation or nested object support, you can set the separator
@@ -49,7 +48,7 @@ module DbFuel
           name: '',
           attributes: [],
           debug: false,
-          primary_key: nil,
+          primary_keyed_column: nil,
           register: Burner::DEFAULT_REGISTER,
           separator: '',
           timestamps: true
@@ -62,7 +61,7 @@ module DbFuel
             table_name: table_name,
             attributes: attributes,
             debug: debug,
-            primary_key: primary_key,
+            primary_keyed_column: primary_keyed_column,
             register: register,
             separator: separator,
             timestamps: timestamps

@@ -62,7 +62,7 @@ module DbFuel
             table_name: table_name,
             attributes: attributes,
             debug: debug,
-            primary_key: nil,
+            primary_keyed_column: nil,
             register: register,
             separator: separator,
             timestamps: timestamps,

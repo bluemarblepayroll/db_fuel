@@ -34,7 +34,7 @@ describe DbFuel::Library::ActiveRecord::Upsert do
         { key: :last_name }
       ],
       table_name: 'patients',
-      primary_key: { key: 'patient_number', column: :id },
+      primary_keyed_column: { key: 'patient_number', column: :id },
       timestamps: timestamps,
       unique_attributes: [
         { key: :chart_number }
@@ -97,7 +97,7 @@ describe DbFuel::Library::ActiveRecord::Upsert do
       expect(output.outs.first.string).to include('Total Inserted: 2')
     end
 
-    it 'sets primary_key for all payload objects' do
+    it 'sets primary_keyed_column for all payload objects' do
       payload[register].each do |object|
         expected = Patient.find_by(chart_number: object['chart_number']).id
         actual   = object['patient_number']
