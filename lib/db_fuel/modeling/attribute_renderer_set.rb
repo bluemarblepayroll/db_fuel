@@ -36,7 +36,7 @@ module DbFuel
 
       # Adds the attributes for created_at and updated_at to the currrent attribute renderers.
       def timestamp_created_attribute_renderers
-        timestamp_attributes = [created_at_timestamp_attribute, updated_at_timestamp_attribute]
+        timestamp_attributes = [CREATED_AT, UPDATED_AT]
 
         timestamp_attributes.map do |a|
           Burner::Modeling::AttributeRenderer.new(a, resolver)
@@ -45,7 +45,7 @@ module DbFuel
 
       # Adds the attribute for updated_at to the currrent attribute renderers.
       def timestamp_updated_attribute_renderers
-        timestamp_attributes = [updated_at_timestamp_attribute]
+        timestamp_attributes = [UPDATED_AT]
 
         timestamp_attributes.map do |a|
           Burner::Modeling::AttributeRenderer.new(a, resolver)
@@ -64,16 +64,6 @@ module DbFuel
 
           resolver.set(memo, attribute_renderer.key, value)
         end
-      end
-
-      private
-
-      def created_at_timestamp_attribute
-        CREATED_AT
-      end
-
-      def updated_at_timestamp_attribute
-        UPDATED_AT
       end
     end
   end
