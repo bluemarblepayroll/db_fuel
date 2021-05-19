@@ -59,6 +59,7 @@ module DbFuel
         def initialize(
           table_name:,
           primary_keyed_column:,
+          keys_register: nil,
           name: '',
           attributes: [],
           debug: false,
@@ -69,6 +70,7 @@ module DbFuel
         )
           super(
             name: name,
+            keys_register: keys_register,
             table_name: table_name,
             attributes: attributes,
             debug: debug,
@@ -128,7 +130,7 @@ module DbFuel
           first_record
         end
 
-        def insert_record(output, row, time)
+        def insert_record(output, row, time, keys = Set.new)
           dynamic_attrs = if timestamps
                             # doing an INSERT and timestamps should be set
                             # set the created_at and updated_at fields
@@ -137,7 +139,7 @@ module DbFuel
                             attribute_renderers_set.attribute_renderers
                           end
 
-          set_object = attribute_renderers_set.transform(dynamic_attrs, row, time)
+          set_object = attribute_renderers_set.transform(dynamic_attrs, row, time, keys)
 
           insert_sql = db_provider.insert_sql(set_object)
 
