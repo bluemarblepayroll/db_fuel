@@ -95,9 +95,10 @@ module DbFuel
           total_updated  = 0
 
           payload[register] = array(payload[register])
+          keys              = resolve_key_set(output, payload)
 
           payload[register].each do |row|
-            record_updated = insert_or_update(output, row, payload.time)
+            record_updated = insert_or_update(output, row, payload.time, keys)
 
             if record_updated
               total_updated += 1
@@ -154,7 +155,7 @@ module DbFuel
         end
 
         # Updates only a single record. Lookups primary key to update the record.
-        def update_record(output, row, time)
+        def update_record(output, row, time, keys)
           raise ArgumentError, 'primary_keyed_column is required' unless primary_keyed_column
 
           first_record = find_record(output, row, time)
@@ -167,14 +168,14 @@ module DbFuel
             where_object = { primary_keyed_column.column => id }
 
             # update record using the primary key as the WHERE clause
-            update(output, row, time, where_object)
+            update(output, row, time, where_object, keys)
           end
 
           first_record
         end
 
         # Updates one or many records depending on where_object passed
-        def update(output, row, time, where_object)
+        def update(output, row, time, where_object, keys)
           dynamic_attrs = if timestamps
                             # doing an UPDATE and timestamps should be set,
                             # modify the updated_at field, don't modify the created_at field
@@ -183,7 +184,7 @@ module DbFuel
                             attribute_renderers_set.attribute_renderers
                           end
 
-          set_object = attribute_renderers_set.transform(dynamic_attrs, row, time)
+          set_object = attribute_renderers_set.transform(dynamic_attrs, row, time, keys)
 
           update_sql = db_provider.update_sql(set_object, where_object)
 
@@ -196,14 +197,14 @@ module DbFuel
 
         private
 
-        def insert_or_update(output, row, time)
-          first_record = update_record(output, row, time)
+        def insert_or_update(output, row, time, keys)
+          first_record = update_record(output, row, time, keys)
 
           if first_record
             first_record
           else
             # create the record
-            insert_record(output, row, time)
+            insert_record(output, row, time, keys)
             nil
           end
         end
